@@ -53,19 +53,19 @@ All of the features of WCSEssion and WCSessionDelegate are supported with the ex
 
 * **[Dictionary message passing](#dictionary-message-passing).** How messages consisting of dictionary payloads are transmitted and received.
 
-* **[Data message passing](data-message-passing).** How messages consisting of untyped data payloads are transmitted and received.
+* **[Data message passing](#data-message-passing).** How messages consisting of untyped data payloads are transmitted and received.
 
-* **[User information transfers](user-information-transfers).** How user information payloads are transmitted, received and managed.
+* **[User information transfers](#user-information-transfers).** How user information payloads are transmitted, received and managed.
 
-* **[Application context transfers](application-context-transfers).** How application context payloads are transmitted, received and managed.
+* **[Application context transfers](#application-context-transfers).** How application context payloads are transmitted, received and managed.
 
-* **[Complication data transfers](complication-data-transfers).** How complication payloads are transmitted and managed.
+* **[Complication data transfers](#complication-data-transfers).** How complication payloads are transmitted and managed.
 
-* **[Scheduled local notifications](scheduled-local-notifications).** How local notifcations can be scheduled and managed.
+* **[Scheduled local notifications](#scheduled-local-notifications).** How local notifcations can be scheduled and managed.
 
-* **[Console log management](console-log-management).** How log output can be filtered by severity level at the iOS and Watch apps.
+* **[Console log management](#console-log-management).** How log output can be filtered by severity level at the iOS and Watch apps.
 
-* **[watchLink test app](watchlink-test-app).** How to install and use the test app included with the plugin.
+* **[watchLink test app](#watchlink-test-app).** How to install and use the test app included with the plugin.
 
 ## Installation and Xcode project setup
 
@@ -1227,6 +1227,7 @@ The plugin includes a fully functional test app that illustrates the use of the 
 To run the app, open the ```TestWatchLink.xcodeproj``` Xcode file. Set the Team in each of the targets to your team identifier. The app is now ready to run.
 
 <img src="iphone.png" align="right" width="250">
+#### Test app iPhone screen
 The iPhone screen provides buttons to exercise the following communication functions:
 
 * Send a dictionary message to the Watch
@@ -1254,6 +1255,7 @@ The iPhone screen provides buttons to exercise the following communication funct
 The area below the buttons is a console where the test app posts results of communication actions and received communications.
 
 <img src="watch.png" align="right" width="250">
+#### Test app Watch screen
 The Watch screen provides a console where the test app posts results of communication actions and received communications. There are additioanl screens that provide buttons to exercise the following communication functions:
 
 * Send a dictionary message to the Watch
