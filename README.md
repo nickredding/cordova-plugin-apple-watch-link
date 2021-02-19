@@ -1227,6 +1227,7 @@ The plugin includes a fully functional test app that illustrates the use of the 
 To run the app, open the ```TestWatchLink.xcodeproj``` Xcode file. Set the Team in each of the targets to your team identifier. The app is now ready to run.
 
 <img src="iphone.png" align="right" width="250">
+
 #### Test app iPhone screen
 The iPhone screen provides buttons to exercise the following communication functions:
 
@@ -1255,6 +1256,7 @@ The iPhone screen provides buttons to exercise the following communication funct
 The area below the buttons is a console where the test app posts results of communication actions and received communications.
 
 <img src="watch.png" align="right" width="250">
+
 #### Test app Watch screen
 The Watch screen provides a console where the test app posts results of communication actions and received communications. There are additioanl screens that provide buttons to exercise the following communication functions:
 
