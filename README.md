@@ -392,12 +392,13 @@ A ```Dictionary``` is defined as a ```property list dictionary,``` which is a di
 A ```property list value``` is defined as follows:
 ```
 <property-list-value> = <Boolean (Bool)> | <Number (Int64)> | String (String)> | 
-						<property-list-array> | <property-list-dictionary>
+				<property-list-array> | 
+				<property-list-dictionary>
 
 <property-list-array> = [ <property-list-value>, ... ] 
-							([ <property-list-value> ])
+				([ <property-list-value> ])
 <property-list-dictionary> = { <String> : <property-list-value>, ... }
-							([ <String> : <property-list-value> ])
+				([ <String> : <property-list-value> ])
 ```
 In this definition, the types refer to Javascript types, with the corresponding Swift type in parentheses. 
 
@@ -435,8 +436,8 @@ The iOS app and watchOS app can bind a default message handler to receive messag
 Dictionary messages are sent from the iOS app using a traditional Cordova plugin call, as in
 ```
 watchLink.sendMessage(msgType, msgBody, success, error)
-//	Upon return, msgBody.TIMESTAMP contains the unique numeric timestamp that can be used 
-//		to refer to the message.
+//	Upon return, msgBody.TIMESTAMP contains the unique numeric 
+//		timestamp that can be used to refer to the message.
 //	msgType = <String>
 //	msgBody = <property-list-dictionary>
 //	success = function(timestamp)
@@ -656,7 +657,8 @@ User information transfers are sent from the watchOS app using a call to the fun
 ```
 func updateUserInfoToPhone(userInfo: [String: Any], 
 			ackHandler: (([String: Any]) -> Void)? = nil, 
-			errHandler: ((String, [String: Any]) -> Void)? = nil) -> Int64
+			errHandler: ((String, [String: Any]) -> Void)? = nil) 
+	-> Int64
 ```
 As with ```watchLink.sendUserInfo,``` omitting the ```ackHandler``` parameter (or providing ```nil```) will send the transfer without acknowledgement. A transfer that is sent with acknowledgement will block subsequent transfers (acknowledged or not) until it is acknowledged or flushed due to an error or session reset.
 
@@ -671,10 +673,11 @@ A user information transfer can be queried via ```watchLink.queryUserInfo``` fro
 watchLink.queryUserInfo(timestamp, success, error)
 //	success = function(transferInfo)
 //		transferInfo = { timestamp: <Number>, 
-						isComplication: <Boolean>, 
-//						transmitComplete: <Boolean>, 
-//						userInfo: <property-list-dictionary> 
-//		transferInfo = false if the transfer status is no longer available
+				isComplication: <Boolean>, 
+//				transmitComplete: <Boolean>, 
+//				userInfo: <property-list-dictionary> 
+//		transferInfo = false if the transfer status is no 
+//			longer available
 
 //	error = function(errorString)
 //		If the Watch is unavailable errorString will be "unavailable"
@@ -726,10 +729,11 @@ The in-progress user information transfers can be accessed via ```watchLink.outs
 ```
 watchLink.outstandingUserInfoTransfers(success, error)
 //	success = function(outstandingUserInfo
-//		outstandingUserInfo = [ { userInfoID: <Number>, 
-								isComplication: <Boolean>, 
-//								transmitComplete: <Boolean>, 
-								userInfo: <property-list-dictionary> } ]
+//		outstandingUserInfo = [ 
+					{ userInfoID: <Number>, 
+						isComplication: <Boolean>, 
+	//					transmitComplete: <Boolean>, 
+						userInfo: <property-list-dictionary> } ]
 
 //	error = function(errorString
 //		If the Watch is unavailable errorString will be "unavailable"
@@ -775,8 +779,8 @@ A dictionary of values representing application context information may be trans
 Application context transfers are sent from the iOS app using a traditional Cordova plugin call, as in
 ```
 watchLink.sendContext(context, success, error);
-//	Upon return, context.TIMESTAMP contains the unique numeric timestamp that can be used 
-//		to refer to the transfer
+//	Upon return, context.TIMESTAMP contains the unique 
+//		numeric timestamp that can be used to refer to the transfer
 //	context = <property-list-dictionary>
 //	success = function(timestamp)
 //		Invoked when the message has been delivered and acknowledged
@@ -912,9 +916,10 @@ A complication data transfer can be queried via ```watchLink.queryComplication``
 ```
 watchLink.queryComplication(timestamp, success, error)
 //	success = function(transferInfo
-//		transferInfo = { timestamp: <Number>, isComplication: <Boolean>, 
-						transmitComplete: <Boolean>,
-//						complicationInfo: <property-list-dictionary> 
+//		transferInfo = { timestamp: <Number>, 
+				isComplication: <Boolean>, 
+				transmitComplete: <Boolean>,
+//				complicationInfo: <property-list-dictionary> 
 //		transferInfo = null if the transfer status is no longer available
 
 //	error = function(errorString
@@ -965,11 +970,11 @@ The in-progress complication data transfers can be accessed via ```watchLink.out
 ```
 watchLink.outstandingComplicationTransfers(success, error)
 //	success = function(outstandingUserInfo
-//		outstandingUserInfo = [ { userInfoID: <Number>, 
-//							isComplication: <Boolean>, 
-//							transmitComplete: <Boolean>, 
-//							complicationInfo: <property-list-dictionary> 
-							} ]
+//		outstandingUserInfo = [ 
+				{ userInfoID: <Number>, 
+//					sComplication: <Boolean>, 
+//					transmitComplete: <Boolean>, 
+//					complicationInfo: <property-list-dictionary> } ]
 
 //	error = function(errorString
 //		If the Watch is unavailable errorString will be "unavailable"
@@ -1024,9 +1029,9 @@ Notifications are scheduled from the iOS app using a traditional Cordova plugin 
 ```
 watchLink.scheduleNotification(trigger, payload, success, error)
 //	trigger = <Number> | 
-				{ year: <Number>, month: <Number>, day: <Number>, 
-					hour: <Number>, minute: <Number>, 
-					second: <Number> }
+		{ year: <Number>, month: <Number>, day: <Number>, 
+			hour: <Number>, minute: <Number>, 
+			second: <Number> }
 //		If trigger is a number, the notification will occur 
 //			in that number of seconds after the current time.
 //		Otherwise, the date and time are used as the 
@@ -1222,11 +1227,14 @@ swiftErrorLog(_ msg: String)
 
 Log messages can be issued from Javascript, subject to the same filtering as Swift logs (as determined by ```watchLink.JSlogLevel```). Logs are issued by watchlink.js using these functions.
 ```
-watchLink.log(msg)		// issue "[hh:mm:ss.mm] msg" to the iOS Xcode and Javascript consoles
+// issue "[hh:mm:ss.mm] msg" to the iOS Xcode and Javascript consoles
+watchLink.log(msg)		
 
-watchLink.AppLog(msg)	// issue "[hh:mm:ss.mm]App: msg" to the iOS Xcode and Javascript consoles
+// issue "[hh:mm:ss.mm]App: msg" to the iOS Xcode and Javascript consoles
+watchLink.AppLog(msg)	
 
-watchLink.ErrorLog(msg)	// issue "[hh:mm:ss.mm]Error: msg" to the iOS Xcode and Javascript consoles
+// issue "[hh:mm:ss.mm]Error: msg" to the iOS Xcode and Javascript consoles
+watchLink.ErrorLog(msg)	
 ```
 #### Issue Swift log messages (watchOS)
 Swift log messages can be issued from the watchOS Swift layer as follows:
@@ -1320,7 +1328,7 @@ Acknowledgement can be enabled or disbled acknowledgement for each of functions 
 The following logs appear in the Javascript console.
 ```
 // test app calls watchLink.sendMsg
-[11:59:52.636] msg {"a":223,"b":253,"TIMESTAMP":1613764792634} 
+[11:59:52.636]App: msg {"a":223,"b":253,"TIMESTAMP":1613764792634} 
 
 // WatchLink.swift add message to outgoing queue
 [11:59:52.639]>> Adding 1613764518401.1613764792634 ack:true 
@@ -1353,7 +1361,7 @@ Watch[12:00:00.224]>> Received message
 [12:00:00.248]>> Acknowledged 1613764792634 queue=[] 
 
 // test app indicates message acknowledged via .then())
-[12:00:00.254] ACK msg 1613764792634 
+[12:00:00.254]App: ACK msg 1613764792634 
 
 // WatchLinkExtensionDelegate.swift signalas to WatchLink.swift that 
 // Watch is moving to background (no longer reachable)
@@ -1372,7 +1380,7 @@ of the Javascript console logs appear here as well.
 
 // test app calls watchLink.sendMsg
 2021-02-19 11:59:52.640177-0800 TestWatchLink[13900:7421264] 
-	[11:59:52.636] msg {"a":223,"b":253,"TIMESTAMP":1613764792634
+	[11:59:52.636]App: msg {"a":223,"b":253,"TIMESTAMP":1613764792634
 
 // WatchLink.swift signals Watch becomes reachable
 [12:00:00.077]>> Watch reachable
@@ -1400,7 +1408,7 @@ Watch[12:00:00.224]>> Received message
 
 // test app indicates message acknowledged via .then())
 2021-02-19 12:00:00.256017-0800 TestWatchLink[13900:7421264] 
-	[12:00:00.254] ACK msg 1613764792634
+	[12:00:00.254]App: ACK msg 1613764792634
 	
 // WatchLinkExtensionDelegate.swift signalas to WatchLink.swift that 
 // Watch is moving to background (no longer reachable)
@@ -1461,7 +1469,7 @@ The following logs appear in the Javascript console.
 	"msgBody": {  A = 249; B = 42; }, "session": 1613764518401]
 
 // test app indicates message received
-[12:01:17.510] RCV msg {"B":42,"A":249} 
+[12:01:17.510]App: RCV msg {"B":42,"A":249} 
 ```
 The following logs appear in the iOS Xcode console. Note that all of the Javascript console logs appear here as well.
 ```
@@ -1471,7 +1479,7 @@ The following logs appear in the iOS Xcode console. Note that all of the Javascr
 	
 // test app indicates message received
 2021-02-19 12:01:17.512309-0800 TestWatchLink[13900:7421264] 
-	[12:01:17.510] RCV msg {"B":42,"A":249}
+	[12:01:17.510]App: RCV msg {"B":42,"A":249}
 ```
 The following logs appear in the watchOS Xcode console.
 ```
