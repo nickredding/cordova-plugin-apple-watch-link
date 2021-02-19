@@ -248,7 +248,8 @@ Using the traditional Cordova callback method:
 
 	watchLink.reachability(callback, error)
 	//	success = function(reachability) 
-	//		reachability is the current reachability state of the Watch session
+	//		reachability is the current reachability state of the 
+	//			Watch session
 
 	//	error = function(errorString) 
 	//		If the Watch session has not completed initialization 
@@ -301,8 +302,8 @@ watchLink.applicationState is the application state.
 		true: watchOS app is installed
 		false: watchOS app is not installed
 	watchLink.applicationState.directoryURL
-		The URL of a directory for storing information specific to the currently 
-			paired and active Watch
+		The URL of a directory for storing information specific to the 
+			currently paired and active Watch
         
 Note that watchLink.applicationState.state is false if 
 watchLink.available is not true.
@@ -408,10 +409,10 @@ var buffer = new ArrayBuffer(<length>)
 ```
 where ```<length>``` is the size of the data object in bytes. An ArrayBuffer can be accessed for reading and writing by creating a view in the desired format. For example,
 ```
-//	byteView is an array of 8 bit unsigned integers
+// byteView is an array of 8 bit unsigned integers
 var byteView = new Uint8Array(buffer); 
 
-//	wordView is an array of 32 bit integers
+// wordView is an array of 32 bit integers
 var wordView = new Int32Array(buffer); 
 ```
 In Swift, a data object is declared as type ```Data``` and then cast to an appropriate type for access.
@@ -440,17 +441,22 @@ watchLink.sendMessage(msgType, msgBody, success, error)
 //	msgBody = <property-list-dictionary>
 //	success = function(timestamp)
 //		Invoked when the message has been delivered and acknowledged
-//			timestamp is the string representation of msgBody.TIMESTAMP
+//			timestamp is the string representation of 
+//				msgBody.TIMESTAMP
 
 //	error = function(errorString0
-//		Invoked when an error occured and the message could not be delivered
-//			errorString = string describing the error followed by ":<timestamp>"
+//		Invoked when an error occured
+//			errorString = string describing the error followed 
+//				by ":<timestamp>"
 //			<timestamp> is the value of msgBody.TIMESTAMP
-//		If the Watch is unavailable errorString will be "unavailable:<timestamp>"
-//		If the session was reset errorString will be "sessionreset:<timestamp>"
+//		If the Watch is unavailable errorString will 
+//			be "unavailable:<timestamp>"
+//		If the session was reset errorString will 
+//			be "sessionreset:<timestamp>"
 //		If the Watch session has not completed initialization errorString 
 //			will be "uninitialized"
-//		Errors are logged regardless of whether an error function is provided
+//		Errors are logged regardless of whether an error 
+//			function is provided
 ```
 **Note:** the msgBody sent to the Swift layer is a clone of the object submitted to the sendMessage function.
 
@@ -472,7 +478,8 @@ Dictionary messages are sent from the watchOS app using a call to the function `
 ```
 func messageToPhone(msgType: String, msg: [String: Any], ack: Bool = false,
 			ackHandler: (Int64) -> Void)? = nullHandler, 
-			errHandler: ((String, Int64) -> Void)? = nullHandler) -> Int64
+			errHandler: ((String, Int64) -> Void)? = nullHandler)
+	-> Int64
 ```
 As with ```watchLink.sendMessage,``` omitting the ```ackHandler``` parameter will send the message without acknowledgement. A dictionary message that is sent with acknowledgement will block subsequent dictionary messages (acknowledged or not) until it is acknowledged or flushed due to an error or session reset.
 
@@ -492,7 +499,8 @@ watchLink.bindMessageHandler(expr, handler)
 //	expr = <String> | <RegExp>
 //	handler = function(msgType, msgBody)
 //		Return false to terminate message processing
-//		Otherwise processing will continue with additional matching handlers
+//		Otherwise processing will continue with additional 
+//			matching handlers
 ```
 To handle an incoming message, the message type is extracted and each handler with a matching expression is invoked with the message type and message body as parameters. The order of invocation is the order in which the handlers were bound.
 
@@ -537,13 +545,14 @@ watchLink.sendDataMessage(msgData, success, error);
 //			msgData is the message payload
 
 //	error = function(errorString)
-//		Invoked when an error occured and the message could not be delivered
+//		Invoked when an error occured
 //			errorString = string describing the error
 //		If the Watch is unavailable errorString will be "unavailable"
 //		If the session was reset errorString will be "sessionreset"
 //		If the Watch session has not completed initialization errorString 
 //			will be "uninitialized"
-//		Errors are logged regardless of whether an error function is provided
+//		Errors are logged regardless of whether an error 
+//			function is provided
 ```
 **Note:** the msgData sent to the Swift layer and returned to the success function is a clone of the object submitted to the sendDataMessage function.
 
@@ -604,21 +613,24 @@ A dictionary of values representing user information may be transmitted in eithe
 User information transfers are sent from the iOS app using a traditional Cordova plugin call, as in
 ```
 watchLink.sendUserInfo(userInfo, success, error)
-//	Upon return, userInfo.TIMESTAMP contains the unique numeric timestamp that can be used 
-//		to refer to the transfer.
+//	Upon return, userInfo.TIMESTAMP contains the unique 
+//		numeric timestamp that can be used to refer to the transfer.
 //	userInfo = <property-list-dictionary>
 //	success = function(timestamp)
 //		Invoked when the message has been delivered and acknowledged
-//			timestamp is the string representation of userInfo.TIMESTAMP
+//			timestamp is the string representation of 
+//				userInfo.TIMESTAMP
 
 //	error = function(errorString)
-//		Invoked when an error occured and the message could not be delivered
-//			errorString = string describing the error followed by ":<timestamp>"
+//		Invoked when an error occured
+//			errorString = string describing the error 
+//				followed by ":<timestamp>"
 //			<timestamp> is the value of userInfo.TIMESTAMP
 //		If the session was reset errorString will be "sessionreset"
 //		If the Watch session has not completed initialization errorString 
 //			will be "uninitialized"
-//		Errors are logged regardless of whether an error function is provided
+//		Errors are logged regardless of whether an 
+//			error function is provided
 ```
 **Note:** the userInfo sent to the Swift layer is a clone of the object submitted to the sendUserInfo function.
 
@@ -626,7 +638,7 @@ User information transfers can also be sent from the iOS app using a Promise, as
 ```
 watchLink.sendUserInfo(userInfo).then(success).catch(error)
 //	Upon return, userInfo.TIMESTAMP contains the unique numeric 
-//timestamp that can be used to refer to the transfer.
+//	timestamp that can be used to refer to the transfer.
 ```
 User information transfers are normally acknowledged by the receiving end, at which point the success function is invoked. However, if ```null``` is provided for the success parameter, the transfer will be sent without acknowledgement. For this behaviour you must use the traditional Cordova plugin call.
 
@@ -659,9 +671,9 @@ A user information transfer can be queried via ```watchLink.queryUserInfo``` fro
 watchLink.queryUserInfo(timestamp, success, error)
 //	success = function(transferInfo)
 //		transferInfo = { timestamp: <Number>, 
-							isComplication: <Boolean>, 
-//							transmitComplete: <Boolean>, 
-//							userInfo: <property-list-dictionary> 
+						isComplication: <Boolean>, 
+//						transmitComplete: <Boolean>, 
+//						userInfo: <property-list-dictionary> 
 //		transferInfo = false if the transfer status is no longer available
 
 //	error = function(errorString)
@@ -698,9 +710,9 @@ All outstanding user information transfers can be cancelled and flushed from the
 User information transfers from the watchOS app can be managed as follows:
 ```
 func queryUserInfo(timestamp: Int64) -> (timestamp: Int64, 
-											isComplication: Bool, 
-											transmitComplete: Bool, 
-											userInfo: [String: Any])
+										isComplication: Bool, 
+										transmitComplete: Bool, 
+										userInfo: [String: Any])
 
 func cancelUserInfo(timestamp: Int64) -> Bool
 
@@ -771,16 +783,18 @@ watchLink.sendContext(context, success, error);
 //		Context is the application context payload
 
 //	error = function(errorString)
-//		Invoked when an error occured and the message could not be delivered
-//			errorString = string describing the error followed by ":<timestamp>"
+//		Invoked when an error occured
+//			errorString = string describing the error followed 
+//				by ":<timestamp>"
 //			<timestamp> is the value of userInfo.TIMESTAMP
-//		If context cannot be cloned errorString will be 
-//			"payload error: <JSON error message>:<timestamp>"
-//		If the transfer is superceded errorString will be "reset:<timestamp>"
-//		If the transfer is flushed errorString will be "sessionreset:<timestamp>"
-//		If the Watch session has not completed initialization errorString 
-//			will be "uninitialized"
-//		Errors are logged regardless of whether an error function is provided
+//		If the transfer is superceded errorString 
+//			will be "reset:<timestamp>"
+//		If the transfer is flushed errorString 
+//			will be "sessionreset:<timestamp>"
+//		If the Watch session has not completed initialization 
+//			errorString will be "uninitialized"
+//		Errors are logged regardless of whether an error 
+//			function is provided
 ```
 **Note:** the context sent to the Swift layer is a clone of the object submitted to the sendContext function.
 
@@ -883,8 +897,8 @@ watchLink.sendComplicationInfo(complicationInfo);
 //	Upon return, context.TIMESTAMP contains the unique 
 //	numeric timestamp that can be used to refer to the transfer
 //	complicationInfo = <property-list-dictionary>
-//	returns: true if transmission was initiated, false if Watch is unavailable, 
-//		"payload error: <JSON error message>" if a payload cloning error occured
+//	returns: true if transmission was initiated, false if Watch 
+//		is unavailable
 ```
 watchLink.sendComplicationInfo adds the key ```TIMESTAMP``` to the complicationInfo object which contains a unique timestamp representing the transfer. Note that if complicationInfo contains an existing key ```TIMESTAMP``` it will be overwritten with the timestamp. This value can be used to query the status of the transfer, and cancel the tranfer if desired. The value of this key can be retrived from the supplied complicationInfo object immedately upon return from the function invocation.
 
@@ -899,8 +913,8 @@ A complication data transfer can be queried via ```watchLink.queryComplication``
 watchLink.queryComplication(timestamp, success, error)
 //	success = function(transferInfo
 //		transferInfo = { timestamp: <Number>, isComplication: <Boolean>, 
-							transmitComplete: <Boolean>,
-//							complicationInfo: <property-list-dictionary> 
+						transmitComplete: <Boolean>,
+//						complicationInfo: <property-list-dictionary> 
 //		transferInfo = null if the transfer status is no longer available
 
 //	error = function(errorString
@@ -952,9 +966,9 @@ The in-progress complication data transfers can be accessed via ```watchLink.out
 watchLink.outstandingComplicationTransfers(success, error)
 //	success = function(outstandingUserInfo
 //		outstandingUserInfo = [ { userInfoID: <Number>, 
-//								isComplication: <Boolean>, 
-//								transmitComplete: <Boolean>, 
-//								complicationInfo: <property-list-dictionary> 
+//							isComplication: <Boolean>, 
+//							transmitComplete: <Boolean>, 
+//							complicationInfo: <property-list-dictionary> 
 							} ]
 
 //	error = function(errorString
@@ -1011,10 +1025,12 @@ Notifications are scheduled from the iOS app using a traditional Cordova plugin 
 watchLink.scheduleNotification(trigger, payload, success, error)
 //	trigger = <Number> | 
 				{ year: <Number>, month: <Number>, day: <Number>, 
-					hour: <Number>, minute: <Number>, second: <Number> 
+					hour: <Number>, minute: <Number>, 
+					second: <Number> }
 //		If trigger is a number, the notification will occur 
 //			in that number of seconds after the current time.
-//		Otherwise, the date and time are used as the notification trigger.
+//		Otherwise, the date and time are used as the 
+//			notification trigger.
 //		The year, month, and day are optional and default to 
 //			the current year, month 
 //			and day if omitted
@@ -1023,14 +1039,14 @@ watchLink.scheduleNotification(trigger, payload, success, error)
 //	payload = { title: <String>, subtitle: <String>, body: <String>, 
 //					userInfo: <property-list-dictionary>
 //		subtitle, body and userInfo are optional
-//		userInfo is returned to notification delgate and/or notification handler
-//			to identify the notification
+//		userInfo is returned to notification delgate and/or 
+//			notification handler to identify the notification
 //	success = function(timestamp)
 //		Invoked when the notification has been scheduled.
 //		timestamp is the unique timestamp (as a string) created 
 //			to identify the notification
 //		The timestamp represents the Unix epoch (number of milliseconds 
-//			since 1970/01/01) corresponding to the notification trigger
+//			since 1970/01/01) corresponding to the trigger
 
 //	error = function(errorString)
 //		Invoked when an error occured
@@ -1051,7 +1067,8 @@ watchLink.retrieveNotifications(success, error)
 //	success = function(<notification-list>
 //		<notification-list> = [ <property-list-dictionary> ]
 //		Each element is the userInfo associated with a notification, with 
-//			userInfo.TIMESTAMP set to the timestamp ID of the notification
+//			userInfo.TIMESTAMP set to the timestamp ID 
+//				of the notification
 
 //	error = function(errorString
 //		Invoked when an error occurred
@@ -1387,8 +1404,9 @@ Watch[12:00:00.224]>> Received message
 	
 // WatchLinkExtensionDelegate.swift signalas to WatchLink.swift that 
 // Watch is moving to background (no longer reachable)
-[12:00:16.196]>> Received message ["session": 1613764518401, "msgBody": {
-}, "msgType": WATCHAPPBACKGROUND, "timestamp": 1613764816147]
+[12:00:16.196]>> Received message ["session": 1613764518401, 
+	"msgBody": {}, "msgType": WATCHAPPBACKGROUND, 
+	"timestamp": 1613764816147]
 [12:00:16.197]>> Watch Application State: BACKGROUND
 [12:00:16.284]>> Watch NOT reachable
 ```
