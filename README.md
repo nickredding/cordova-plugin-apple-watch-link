@@ -1226,9 +1226,45 @@ The plugin includes a fully functional test app that illustrates the use of the 
 
 To run the app, open the ```TestWatchLink.xcodeproj``` Xcode file. Set the Team in each of the targets to your team identifier. The app is now ready to run.
 
-The iPhone screen
+<img src="iphone.png" align="right" width="250">
+The iPhone screen provides buttons to exercise the following communication functions:
 
-<img src="iphone.png" align="right">
+* Send a dictionary message to the Watch
+
+* Send a data message to the watch
+
+* Send a user information update to the watch
+
+* Send an application context update to the watch
+
+* Enable or disble acknowledgement for the above functions
+
+* Schedule a local notification
+
+* Cancel a scheduled notification
+
+* Cancel all scheduled notification
+
+* List pending notifications
+
+* Initiate a message session reset
+
+* Clear the console
+
+The area below the buttons is a console where the test app posts results of communication actions and received communications.
+
+<img src="watch.png" align="right" width="250">
+The Watch screen provides a console where the test app posts results of communication actions and received communications. There are additioanl screens that provide buttons to exercise the following communication functions:
+
+* Send a dictionary message to the Watch
+
+* Send a data message to the watch
+
+* Send a user information update to the watch
+
+* Send an application context update to the watch
+
+Acknowledgement can be enabled or disbled acknowledgement for each of functions from their respective pages.
 
 #### Annotated log example (iOS test app sends message to Watch)
 
