@@ -1312,7 +1312,6 @@ The area below the buttons is a console where the test app posts results of comm
 
 <img src="watch.png" align="right" width="250">
 
-
 The Watch screen provides a console where the test app posts results of communication actions and received communications. There are additioanl screens that provide buttons to exercise the following communication functions:
 
 * Send a dictionary message to the Watch
