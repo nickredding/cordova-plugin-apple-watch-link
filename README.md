@@ -1308,9 +1308,11 @@ The iPhone screen provides buttons to exercise the following communication funct
 
 The area below the buttons is a console where the test app posts results of communication actions and received communications.
 
+#### Test app Watch screen
+
 <img src="watch.png" align="right" width="250">
 
-#### Test app Watch screen
+
 The Watch screen provides a console where the test app posts results of communication actions and received communications. There are additioanl screens that provide buttons to exercise the following communication functions:
 
 * Send a dictionary message to the Watch
