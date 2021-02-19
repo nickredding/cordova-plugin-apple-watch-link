@@ -362,15 +362,15 @@ There are six methods of communication provided:
 
 * **[Dictionary message passing](#dictionary-message-passing):** messages may be exchanged containing a dictionary of values. Messages from the iOS app to the watchOS app will be queued until the watchOS app is reachable (in foreground). Messages to the iOS app from the watchOS app will be queued until the iOS app is available (in foreground or background).
 
-* **[Data message passing](data-message-passing):** messages may be exchanged containing an untyped data object. Messages from the iOS app to the watchOS app will be queued until the watchOS app is reachable (in foreground). Messages to the iOS app from the watchOS app will be queued until the iOS app is available (in foreground or background).
+* **[Data message passing](#data-message-passing):** messages may be exchanged containing an untyped data object. Messages from the iOS app to the watchOS app will be queued until the watchOS app is reachable (in foreground). Messages to the iOS app from the watchOS app will be queued until the iOS app is available (in foreground or background).
 
-* **[User information transfers](user-information-transfers):** a dictionary of values representing user information may be transmitted in either direction. These transfers can occur in background (when the watchOS app is not reachable, i.e. the watchOS app is not in foreground).
+* **[User information transfers](#user-information-transfers):** a dictionary of values representing user information may be transmitted in either direction. These transfers can occur in background (when the watchOS app is not reachable, i.e. the watchOS app is not in foreground).
 
-* **[Application context transfers](application-context-transfers):** a dictionary of values representing application context may be transmitted in either direction. These transfers can occur in background (when the watchOS app is not reachable, i.e. the watchOS app is not in foreground).
+* **[Application context transfers](#application-context-transfers):** a dictionary of values representing application context may be transmitted in either direction. These transfers can occur in background (when the watchOS app is not reachable, i.e. the watchOS app is not in foreground).
 
-* **[Complication data transfers](complication-data-transfers):** a dictionary of values representing complication user information may be transmitted from the iOS app to the watchOS app. These transfers can occur in background (when the watchOS app is not reachable, i.e. the watchOS app is not in foreground).
+* **[Complication data transfers](#complication-data-transfers):** a dictionary of values representing complication user information may be transmitted from the iOS app to the watchOS app. These transfers can occur in background (when the watchOS app is not reachable, i.e. the watchOS app is not in foreground).
 
-* **[Scheduled local notifications](scheduled-local-notifications):** you can schedule a local notification to be presented at a specific time. The notification will be shown on the iOS device or Watch, depending on which one is active.
+* **[Scheduled local notifications](#scheduled-local-notifications):** you can schedule a local notification to be presented at a specific time. The notification will be shown on the iOS device or Watch, depending on which one is active.
 
 #### Dictionary format
 
