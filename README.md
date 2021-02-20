@@ -212,19 +212,19 @@ has completed initialization.
 	
 Using the traditional Cordova callback method:
 
-	watchLink.availability(callback, error)
-	//	success = function(availability)
-	//		availability is the current availability state 
-	//		of the Watch session
+watchLink.availability(callback, error)
+//	success = function(availability)
+//		availability is the current availability state 
+//		of the Watch session
 
-	//	error = function(errorString)
-	//		If the Watch session has not completed initialization 
-	//			errorString will be "uninitialized"
+//	error = function(errorString)
+//		If the Watch session has not completed initialization 
+//			errorString will be "uninitialized"
 
 	
 Using the Promise construct:
 
-	watchLink.availability().then(callback).catch(error)
+watchLink.availability().then(callback).catch(error)
 
 watchLink.availabilityChanged(callback) registers a callback to invoke when the 
 availability state changes. The callback parameter represents the new 
@@ -250,19 +250,19 @@ has completed initialization.
 	
 Using the traditional Cordova callback method:
 
-	watchLink.reachability(callback, error)
-	//	success = function(reachability) 
-	//		reachability is the current reachability state of the 
-	//			Watch session
+watchLink.reachability(callback, error)
+//	success = function(reachability) 
+//		reachability is the current reachability state of the 
+//			Watch session
 
-	//	error = function(errorString) 
-	//		If the Watch session has not completed initialization 
-	//			errorString will be "uninitialized"
+//	error = function(errorString) 
+//		If the Watch session has not completed initialization 
+//			errorString will be "uninitialized"
 
 
 Using the Promise construct:
 
-	watchLink.reachability().then(callback).catch(error)
+watchLink.reachability().then(callback).catch(error)
 
 watchLink.reachabilityChanged(callback) registers a callback to invoke 
 when the reachability state changes The callback parameter represents 
@@ -319,17 +319,17 @@ has completed initialization.
 	
 Using the traditional Cordova callback method:
 
-	watchLink.watchApplicationState(callback, error)
-	//	success = function(state)
-	//		state is the current application state
+watchLink.watchApplicationState(callback, error)
+//	success = function(state)
+//		state is the current application state
 
-	//	error = function(errorString)
-	//		If the Watch session has not completed initialization 
-	//			errorString will be "uninitialized"
+//	error = function(errorString)
+//		If the Watch session has not completed initialization 
+//			errorString will be "uninitialized"
 	
 Using the Promise construct:
 
-	watchLink.watchApplicationState().then(callback).catch(error)
+watchLink.watchApplicationState().then(callback).catch(error)
 
 watchLink.applicationStateChanged registers a callback to invoke 
 when the application state changes. The callback parameter 
@@ -747,10 +747,11 @@ watchLink.outstandingUserInfoTransfers().then(success).catch(error)
 
 The in-progress user information transfers can be accessed from the watchOS app as follows:
 ```
-func outstandingUserInfoTransfers() -> [ [ timestamp: Int64, 
-											isComplication: Bool, 
-											transmitComplete: Bool, 
-											userInfo: [String: Any] ] ]
+func outstandingUserInfoTransfers() -> [ [ 
+//		timestamp: Int64, 
+//		isComplication: Bool, 
+//		transmitComplete: Bool, 
+//		userInfo: [String: Any] ] ]
 ```
 #### User information transfer receipt (iOS)
 
