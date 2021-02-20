@@ -1,6 +1,6 @@
 ## Cordova Plugin to enable communication between a Cordova iOS app and an Apple WatchKit extension.
 
-This plugin enables the addition of a companion Apple WatchKit extension to a Cordova iOS app. It provides a Cordova plugin interface and a Watchkit framework that provides iOS/watchOS app messaging.
+This plugin enables the addition of a companion Apple WatchKit extension to a Cordova iOS app. It provides a Cordova plugin interface and a Watchkit framework that provides iOS/watchOS app communication.
 
 The following points should be noted.
 
@@ -36,7 +36,7 @@ Of course, as much logic as desired can be included in the watchOS app. It is no
 
 The Cordova plugin and Watchkit framework are built on the Apple iOS/watchOS [WCSession class](https://developer.apple.com/documentation/watchconnectivity/wcsession) and [WCSessionDelegate protocol](https://developer.apple.com/documentation/watchconnectivity/wcsessiondelegate).
 
-All of the features of WCSEssion and WCSessionDelegate are supported with the exception of file transfer (for which the data messaging functions are a workable alternative).
+All of the features of WCSEssion and WCSessionDelegate are supported with the exception of file transfer.
 
 
 ## Table of Contents
@@ -47,7 +47,7 @@ All of the features of WCSEssion and WCSessionDelegate are supported with the ex
 
 * **[Session status](#session-status).** How the plugin signals the the state of the Watch session and watchOS app. 
 
-* **[Message session management](#message-session-management).** How message sessions are managed.
+* **[watchLink message session management](#watchlink-message-session-management).** How watchLink message sessions are managed.
 
 * **[Communication methods](#communication-methods).** An overview of communication methods supported by the plugin.
 
@@ -63,11 +63,13 @@ All of the features of WCSEssion and WCSessionDelegate are supported with the ex
 
 * **[Scheduled local notifications](#scheduled-local-notifications).** How local notifcations can be scheduled and managed.
 
-* **[Console log management](#console-log-management).** How log output can be filtered by severity level at the iOS and Watch apps.
+* **[Console log management](#console-log-management).** How iOS and Watch app log output can be filtered by severity level.
 
 * **[watchLink test app](#watchlink-test-app).** How to install and use the test app included with the plugin.
 
 ## Installation and Xcode project setup
+
+The plugin creates the global ```window.cordova.watchLink``` which is abbreviated as ```watchLink``` in this document.
 
 #### Latest published version on npm
 ```
@@ -75,7 +77,8 @@ cordova plugin add cordova-plugin-apple-watch-link
 ```
 #### Latest version from GitHub
 ```
-cordova plugin add https://github.com/nickredding/cordova-plugin-apple-watch-link.git
+cordova plugin add
+  https://github.com/nickredding/cordova-plugin-apple-watch-link.git
 ```
 #### Xcode project setup
 
@@ -86,28 +89,28 @@ After adding the WatchKit app target, add the file `WatchLinkExtensionDelegate.s
 class ExtensionDelegate: WatchLinkExtensionDelegate {
 
     override func applicationDidFinishLaunching() {
-        //	Perform any final initialization of your application.
+        // Perform any final initialization of your application.
         super.applicationDidFinishLaunching()
         printAppLog("ExtensionDelegate.applicationDidFinishLaunching")
-		
-		// app-specific code ...
+
+        // app-specific code ...
     }
 
     override func applicationDidBecomeActive() {
         super.applicationDidBecomeActive()
-		
-		// app-specific code ...
+
+        // app-specific code ...
     }
 
     override func applicationWillResignActive() {
         super.applicationWillResignActive()
-		
-		// app-specific code ...
+
+        // app-specific code ...
     }
-	
-	// app-specific code ...
+
+    // app-specific code ...
 ```
-The file `WatchLinkExtensionDelegate.swift` provides the framework for communication with the plugin, and the change to `ExtensionDelegate.swift` enables the framework to process incoming messages from the plugin.
+The file `WatchLinkExtensionDelegate.swift` provides the framework for communication with the plugin, and the changes to `ExtensionDelegate.swift` enable the framework to process incoming messages from the plugin.
 
 The following modifications to the Xcode project are necessary after creating the WatchKit app target:
 
@@ -150,7 +153,7 @@ iOS Cordova app initialization can therefore be organized as follows:
 ```
 document.addEventListener('deviceready', onDeviceReady, false);
 
-function onDeviceReady(){
+function onDeviceReady() {
 	// binding handlers and dealing with notifications can 
 	// proceed immediately
 	window.cordova.watchLink.bindMessageHandler(...);
@@ -181,6 +184,7 @@ The status of the Watch can be queried by the iOS app, which can also bind handl
 The **availability** of the watchOS app reflects whether the companion watchOS app is available, which is required for communication.
 ```
 watchLink availability states
+-----------------------------
 
 watchLink.watchAvailable = true;
 watchLink.watchUnavailable = false;
@@ -277,7 +281,7 @@ watchLink.watchApplicationActive = "ACTIVE";
 watchLink.watchApplicationInactive = "INACTIVE";
 watchLink.watchAapplicationBackground = "BACKGROUND";
 
-watchLink.applicationState is the application state.
+watchLink.applicationState is the full application state.
     
 	null: yet to be initialized, otherwise
 	watchLink.applicationState = 
@@ -305,8 +309,8 @@ watchLink.applicationState is the application state.
 		The URL of a directory for storing information specific to the 
 			currently paired and active Watch
         
-Note that watchLink.applicationState.state is false if 
-watchLink.available is not true.
+Note that watchLink.applicationState.state is false if watchLink.available 
+is not true.
 
 watchLink.watchApplicationState updates and returns the current application
 state of the watchOS app. It is not normally required to call this since
@@ -316,7 +320,7 @@ has completed initialization.
 Using the traditional Cordova callback method:
 
 	watchLink.watchApplicationState(callback, error)
-	//	success = function(state
+	//	success = function(state)
 	//		state is the current application state
 
 	//	error = function(errorString)
@@ -329,7 +333,7 @@ Using the Promise construct:
 
 watchLink.applicationStateChanged registers a callback to invoke 
 when the application state changes. The callback parameter 
-represents the  application state.
+represents the new application state.
 
 Supply null to deregister a previously set callback. Otherwise, this call 
 will overwrite a previously set callback with a different callback.
@@ -344,9 +348,9 @@ watchSession.isReachable // is the iOS app reachable
 ```
 See [WCSession class](https://developer.apple.com/documentation/watchconnectivity/wcsession) for details.
 
-## Message session management
+## watchLink message session management
 
-Cordova plugins are initialized at the Objective-C/Swift level upon initial launch of a Cordova app. However, a Cordova app can restart at the Javascript level (e.g., via ```window.reload()```) and this does not cause plugins at the Objective-C/Swift level to restart. 
+Cordova plugins are initialized at the Objective-C/Swift level upon initial launch of a Cordova app. However, a Cordova app can restart at the Javascript level (e.g., via ```window.reload```) and this does not cause plugins at the Objective-C/Swift level to restart. 
 
 For this reason, watchLink uses a unique **session ID** to identify communication in the current messaging session. This key is created when the Javascript layer starts initially or restarts, and any previous session IDs become obsolete. Communications arriving with an obsolete session ID are discarded, and when a session starts any pending communications awaiting transmission with an obsolete session ID are also discarded.
 
@@ -360,26 +364,26 @@ watchLink.resetSession(completion)
 ```
 It is not normally necessary for the iOS app to invoke ```watchLink.resetSession``` since this is done by watchLink.js when it initializes or reinitializes. However, this function  can be invoked to invalidate the current session and start a new one if the app needs to do that absent a restart at the Javascript level.
 
-When the watchOS app initializes, and prior to receiving a reset message from the iOS app, communications are dispatched with session ID zero which is accepted by the iOS watchLink. Upon receipt of a reset message the watchOS app updates the session ID of pending communications that have a zero session ID to the new session ID.
+When the watchOS app initializes, and prior to receiving a reset message from the iOS app, communications are dispatched with session ID zero which is accepted by the iOS watchLink. Upon receipt of a reset, message the watchOS app updates the session ID of pending communications that have a zero session ID to the new session ID.
 
 #### Watch session reset callback (watchOS)
 
 It may be useful for a reset issued by the iOS app to be signaled to the watchOS app. This can be accomplished by binding a reset handler.
 ```
 watchReset(_ f: (() -> Void))
-//		sets the function f to invoke when the Watch session is reset. 
+//	sets the function f to invoke when the Watch session is reset. 
 ```
 ## Communication methods
 
 There are six methods of communication provided:
 
-* **[Dictionary message passing](#dictionary-message-passing):** messages may be exchanged containing a dictionary of values. Messages from the iOS app to the watchOS app will be queued until the watchOS app is reachable (in foreground). Messages to the iOS app from the watchOS app will be queued until the iOS app is available (in foreground or background).
+* **[Dictionary message passing](#dictionary-message-passing):** messages may be exchanged containing a dictionary of values. Messages will be queued until the companion app is reachable.
 
-* **[Data message passing](#data-message-passing):** messages may be exchanged containing an untyped data object. Messages from the iOS app to the watchOS app will be queued until the watchOS app is reachable (in foreground). Messages to the iOS app from the watchOS app will be queued until the iOS app is available (in foreground or background).
+* **[Data message passing](#data-message-passing):** messages may be exchanged containing an untyped data object. Messages will be queued until the companion app is reachable.
 
-* **[User information transfers](#user-information-transfers):** a dictionary of values representing user information may be transmitted in either direction. These transfers can occur in background (when the watchOS app is not reachable, i.e. the watchOS app is not in foreground).
+* **[User information transfers](#user-information-transfers):** a dictionary of values representing user information may be transmitted in either direction. These transfers can occur in background (when the companion app is available but not reachable).
 
-* **[Application context transfers](#application-context-transfers):** a dictionary of values representing application context may be transmitted in either direction. These transfers can occur in background (when the watchOS app is not reachable, i.e. the watchOS app is not in foreground).
+* **[Application context transfers](#application-context-transfers):** a dictionary of values representing application context may be transmitted in either direction. These transfers can occur in background (when the companion app is available but not reachable).
 
 * **[Complication data transfers](#complication-data-transfers):** a dictionary of values representing complication user information may be transmitted from the iOS app to the watchOS app. These transfers can occur in background (when the watchOS app is not reachable, i.e. the watchOS app is not in foreground).
 
@@ -422,7 +426,7 @@ In Swift, a data object is declared as type ```Data``` and then cast to an appro
 
 Dictionary messages are accompanied by a **message type** which is used to determine how to route the message at the receiving end. Both the iOS app and watchOS app can bind a message handler function to a message type, and messages with that message type will be delivered to the handler that is bound.
 
-Dictionary messages cannot be sent unless the watchOS app is reachable. If the watchOS app is available but not reachable, dictionary messages are queued until the watchOS app becomes reachable.
+Dictionary messages cannot be sent unless the companion app is reachable. If the companion app is available but not reachable, dictionary messages are queued until the companion app becomes reachable.
 
 The following message types are reserved and may not be used: 
 ```
@@ -444,7 +448,6 @@ watchLink.sendMessage(msgType, msgBody, success, error)
 //		Invoked when the message has been delivered and acknowledged
 //			timestamp is the string representation of 
 //				msgBody.TIMESTAMP
-
 //	error = function(errorString0
 //		Invoked when an error occured
 //			errorString = string describing the error followed 
@@ -459,7 +462,7 @@ watchLink.sendMessage(msgType, msgBody, success, error)
 //		Errors are logged regardless of whether an error 
 //			function is provided
 ```
-**Note:** the msgBody sent to the Swift layer is a clone of the object submitted to the sendMessage function.
+**Note:** the msgBody sent to the Swift layer is a clone of the object submitted to the sendMessage function. Therefore, changes to msgBody made prior to transmission will not be reflected in the message payload.
 
 Dictionary messages can also be sent from the iOS app using a Promise, as in
 ```
@@ -478,13 +481,13 @@ Note that regardless of acknowledgement, messages are sent and delivered in the 
 Dictionary messages are sent from the watchOS app using a call to the function ```messageToPhone.```
 ```
 func messageToPhone(msgType: String, msg: [String: Any], ack: Bool = false,
-			ackHandler: (Int64) -> Void)? = nullHandler, 
-			errHandler: ((String, Int64) -> Void)? = nullHandler)
+			ackHandler: (Int64) -> Void)= nullHandler, 
+			errHandler: ((String, Int64) -> Void)= nullHandler)
 	-> Int64
 ```
-As with ```watchLink.sendMessage,``` omitting the ```ackHandler``` parameter will send the message without acknowledgement. A dictionary message that is sent with acknowledgement will block subsequent dictionary messages (acknowledged or not) until it is acknowledged or flushed due to an error or session reset.
+Setting the ```ack``` parameter to true will send the message with acknowledgement. A dictionary message that is sent with acknowledgement will block subsequent dictionary messages (acknowledged or not) until it is acknowledged or flushed due to an error or session reset.
 
-The ```errHandler``` function (if provided) will be invoked in the case of an error arising. If the session was reset errorString will be "sessionreset". Errors are logged regardless of whether an error handler is provided.
+The ```errHandler``` function (if provided) will be invoked in the case of an error arising. If the session was reset errorString will be "sessionreset:<timestamp>". Errors are logged regardless of whether an error handler is provided.
 
 This function returns the unique timestamp assigned to the message, and this value is provided to the ```ackHandler``` and ```errHandler``` functions.
 
@@ -531,7 +534,7 @@ Message processing in the watchOS app is handled in the same way as on the iOS a
 
 ## Data message passing
 
-Data messages are actually sent using dictionary messages. Both the iOS app and watchOS app can bind a message handler function to handle data messages.
+Data messages are actually sent using dictionary messages. Both the iOS app and watchOS app can bind a message handler function to handle incoming data messages.
 
 Data messages cannot be sent unless the watchOS app is reachable. If the Watch is available but not reachable, data messages are queued until the Watch becomes reachable.
 
@@ -544,7 +547,6 @@ watchLink.sendDataMessage(msgData, success, error);
 //	success = function(msgData)
 //		Invoked when the message has been delivered and acknowledged
 //			msgData is the message payload
-
 //	error = function(errorString)
 //		Invoked when an error occured
 //			errorString = string describing the error
@@ -555,7 +557,7 @@ watchLink.sendDataMessage(msgData, success, error);
 //		Errors are logged regardless of whether an error 
 //			function is provided
 ```
-**Note:** the msgData sent to the Swift layer and returned to the success function is a clone of the object submitted to the sendDataMessage function.
+**Note:** the msgData sent to the Swift layer and returned to the success function is a clone of the object submitted to the sendDataMessage function. Therefore, changes to msgData made prior to transmission will not be reflected in the message payload.
 
 Data messages can also be sent from the iOS app using a Promise, as in
 ```
@@ -572,12 +574,12 @@ Note that regardless of acknowledgement, messages are sent and delivered in the 
 Data messages are sent from the watchOS app using a call to the function ```dataMessageToPhone```
 ```
 func dataMessageToPhone(msg: Data, ack: Bool = false,
-			ackHandler: ((Int64) -> Void)? = nullHandler, 
-			errHandler: ((String) -> Void)? = nullHandler) -> Int64
+			ackHandler: ((Int64) -> Void)= nullHandler, 
+			errHandler: ((String) -> Void)= nullHandler) -> Int64
 ```
 This function returns the unique timestamp assigned to the data message.
 
-As with ```watchLink.sendMessage,``` omitting the ```ackHandler``` parameter (or providing ```nil```) will send the message without acknowledgement. A data message that is sent with acknowledgement will block subsequent data messages (acknowledged or not) until it is acknowledged or flushed due to an error or session reset.
+Setting the ```ack``` parameter to true will send the message with acknowledgement. A data message that is sent with acknowledgement will block subsequent data messages (acknowledged or not) until it is acknowledged or flushed due to an error or session reset.
 
 The ```ackHandler``` function (if provided) receives the timestamp returned by ```dataMessageToPhone```.
 
@@ -607,9 +609,9 @@ bindDataMessageHandler(handler: @escaping ((Data) -> Bool))
 
 ## User information transfers
 
-A dictionary of values representing user information may be transmitted in either direction. These transfers can occur in background (when the watchOS app is not reachable, i.e. the watchOS app is not in foreground).
+A dictionary of values representing user information may be transmitted in either direction. These transfers can occur in background (when the companion app is not reachable).
 
-#### User information transmission (iOS)
+#### User information transfer (iOS)
 
 User information transfers are sent from the iOS app using a traditional Cordova plugin call, as in
 ```
@@ -621,7 +623,6 @@ watchLink.sendUserInfo(userInfo, success, error)
 //		Invoked when the message has been delivered and acknowledged
 //			timestamp is the string representation of 
 //				userInfo.TIMESTAMP
-
 //	error = function(errorString)
 //		Invoked when an error occured
 //			errorString = string describing the error 
@@ -651,7 +652,7 @@ watchLink.sendUserInfo adds the key ```TIMESTAMP``` to the userInfo object which
 
 The userInfo object received by the counterpart app will include keys ```TIMESTAMP```, ```SESSION``` and ```ACK```. If the original userInfo object contains any of these keys they will be overwritten.
 
-#### User information transmission (watchOS)
+#### User information transfer (watchOS)
 
 User information transfers are sent from the watchOS app using a call to the function ```updateUserInfoToPhone``` which returns the Watch equivalent of ```TIMESTAMP.```
 ```
@@ -660,7 +661,7 @@ func updateUserInfoToPhone(userInfo: [String: Any],
 			errHandler: ((String, [String: Any]) -> Void)? = nil) 
 	-> Int64
 ```
-As with ```watchLink.sendUserInfo,``` omitting the ```ackHandler``` parameter (or providing ```nil```) will send the transfer without acknowledgement. A transfer that is sent with acknowledgement will block subsequent transfers (acknowledged or not) until it is acknowledged or flushed due to an error or session reset.
+Setting the ```ack``` parameter to true will send the information with acknowledgement. A transfer that is sent with acknowledgement will block subsequent transfers (acknowledged or not) until it is acknowledged or flushed due to an error or session reset.
 
 The ```errHandler``` function (if provided) will be invoked in the case of an error arising. If the transfer is cancelled errorString will be "sessionreset". Errors are logged regardless of whether an error function is provided
 
@@ -678,7 +679,6 @@ watchLink.queryUserInfo(timestamp, success, error)
 //				userInfo: <property-list-dictionary> 
 //		transferInfo = false if the transfer status is no 
 //			longer available
-
 //	error = function(errorString)
 //		If the Watch is unavailable errorString will be "unavailable"
 //		If the Watch session has not completed initialization errorString 
@@ -696,7 +696,6 @@ watchLink.cancelUserInfo(timestamp, success, error)
 //	success = function(cancelled
 //		cancelled = <Boolean>, true if the transfer was cancelled, 
 //			false otherwise
-
 //	error = function(errorString
 //		If the Watch is unavailable errorString will be "unavailable"
 //		If the Watch session has not completed initialization errorString 
@@ -712,10 +711,11 @@ All outstanding user information transfers can be cancelled and flushed from the
 
 User information transfers from the watchOS app can be managed as follows:
 ```
-func queryUserInfo(timestamp: Int64) -> (timestamp: Int64, 
-										isComplication: Bool, 
-										transmitComplete: Bool, 
-										userInfo: [String: Any])
+func queryUserInfo(timestamp: Int64) -> 
+		(timestamp: Int64, 
+		isComplication: Bool, 
+		transmitComplete: Bool, 
+		userInfo: [String: Any])
 
 func cancelUserInfo(timestamp: Int64) -> Bool
 
@@ -730,11 +730,10 @@ The in-progress user information transfers can be accessed via ```watchLink.outs
 watchLink.outstandingUserInfoTransfers(success, error)
 //	success = function(outstandingUserInfo
 //		outstandingUserInfo = [ 
-					{ userInfoID: <Number>, 
-						isComplication: <Boolean>, 
-	//					transmitComplete: <Boolean>, 
-						userInfo: <property-list-dictionary> } ]
-
+//			{ userInfoID: <Number>, 
+//			isComplication: <Boolean>, 
+//			transmitComplete: <Boolean>, 
+//			userInfo: <property-list-dictionary> } ]
 //	error = function(errorString
 //		If the Watch is unavailable errorString will be "unavailable"
 //		If the Watch session has not completed initialization errorString 
@@ -785,7 +784,6 @@ watchLink.sendContext(context, success, error);
 //	success = function(timestamp)
 //		Invoked when the message has been delivered and acknowledged
 //		Context is the application context payload
-
 //	error = function(errorString)
 //		Invoked when an error occured
 //			errorString = string describing the error followed 
@@ -818,11 +816,11 @@ The context object received by the counterpart app will include keys ```TIMESTAM
 
 Application context transfers are sent from the watchOS app using a call to the function ```updateUserInfoToPhone.```
 ```
-func updateContextToPhone(context: [String: Any], 
+func updateContextToPhone(context: [String: Any], ack: Bool = false,
 			ackHandler: ((Int64) -> Void)? = nil, 
 			errHandler: ((String) -> Void)? = nil) -> Int64
 ```
-As with ```watchLink.sendContext,``` omitting the ```ackHandler``` parameter (or providing ```nil```) will send the transfer without acknowledgement. A transfer that is sent with acknowledgement will block subsequent transfers (acknowledged or not) until it is acknowledged or flushed due to an error or session reset.
+Setting the ```ack``` parameter to true will send the information with acknowledgement. A transfer that is sent with acknowledgement will **not** block subsequent transfers (acknowledged or not). However, transfers requested before the completion of a previously requested transfer will overwrite that transfer. In this case, the error handler (if configured) for the previous transfer will be invoked.
 
 The ```errHandler``` function (if provided) will be invoked in the case of an error arising. If the transfer is cancelled errorString will be "sessionreset". Errors are logged regardless of whether an error function is provided.
 
@@ -835,7 +833,6 @@ However, the contents of the most recently transmitted and received application 
 watchLink.latestContextSent(success, error)
 //	success = function(context
 //		context = <property-list-dictionary>
-
 //	error = function(errorString
 //		If the Watch is unavailable errorString will be "unavailable"
 //		If the Watch session has not completed initialization errorString 
@@ -844,7 +841,6 @@ watchLink.latestContextSent(success, error)
 watchLink.latestContextReceived(success, error
 //	success = function(context) 
 //		context = <property-list-dictionary>
-
 //	error = function(errorString
 //		If the Watch is unavailable errorString will be "unavailable"
 //		If the Watch session has not completed initialization errorString 
@@ -921,7 +917,6 @@ watchLink.queryComplication(timestamp, success, error)
 				transmitComplete: <Boolean>,
 //				complicationInfo: <property-list-dictionary> 
 //		transferInfo = null if the transfer status is no longer available
-
 //	error = function(errorString
 //		If the Watch is unavailable errorString will be "unavailable"
 //		If the Watch session has not completed initialization errorString 
@@ -937,7 +932,6 @@ watchLink.cancelComplication(userInfoID, success, error)
 //	success = function(cancelled
 //		cancelled = <Boolean>, true if the transfer was cancelled, 
 			false otherwise
-
 //	error = function(errorString
 //		If the Watch is unavailable errorString will be "unavailable"
 //		If the Watch session has not completed initialization errorString 
@@ -954,7 +948,6 @@ The number of daily complications remaining in quota can be retrieved from the i
 watchLink.queryComplicationQuota(success, error)
 //	success = function(number
 //		number = the number of complication transfers remaining
-
 //	error = function(errorString
 //		If the Watch is unavailable errorString will be "unavailable"
 //		If the Watch session has not completed initialization errorString 
@@ -971,11 +964,10 @@ The in-progress complication data transfers can be accessed via ```watchLink.out
 watchLink.outstandingComplicationTransfers(success, error)
 //	success = function(outstandingUserInfo
 //		outstandingUserInfo = [ 
-				{ userInfoID: <Number>, 
-//					sComplication: <Boolean>, 
-//					transmitComplete: <Boolean>, 
-//					complicationInfo: <property-list-dictionary> } ]
-
+//			{ userInfoID: <Number>, 
+//			isComplication: <Boolean>, 
+//			transmitComplete: <Boolean>, 
+//			complicationInfo: <property-list-dictionary> } ]
 //	error = function(errorString
 //		If the Watch is unavailable errorString will be "unavailable"
 //		If the Watch session has not completed initialization errorString 
@@ -1003,13 +995,13 @@ Local notifications can be scheduled by the iOS app and will be displayed on the
 
 The following notification types may be invoked:
 
-* **iOS delegate:** Normally, this type of notification will not be shown because the iOS app is in the foreground. However, a notification delegate action can be specified which is invoked when the notification arises, and the notification can optionally be displayed via this action.
+* **iOS delegate:** Normally, this type of notification will not be shown because the iOS app is in the foreground. However, a notification delegate action can be specified which is invoked when the notification arises. As well, the delegated notifications can be set to be displayed (independent of whether a notification delegate action has been set).
 
 * **iOS alert:** This type of notification is shown on the screen and in the notification center, with optional accompanying alert sound.
 
 * **iOS banner:** This type of notification is shown in the notification center. There is no accompanying alert sound.
 
-* **watchOS delegate:** Normally, this type of notification will not be shown because the watchOS app is in the foreground. However, a notification delegate action can be specified which is invoked when the notification arises, and the notification can optionally be displayed via this action.
+* **watchOS delegate:** Normally, this type of notification will not be shown because the watchOS app is in the foreground. However, a notification delegate action can be specified which is invoked when the notification arises. As well, the delegated notifications can be set to be displayed (independent of whether a notification delegate action has been set).
 
 * **watchOS alert:** This type of notification is shown on the Watch face with the short look and long look.
 
@@ -1018,7 +1010,7 @@ The following notification types may be invoked:
 You app must request permission (typically at initialization) to post local notifications.
 ```
 watchLink.requestNotificationPermission(allowSound, success, error)
-//	allowSound = <Boolean>, whether to allow sound with notifiations
+//	allowSound = <Boolean>, whether to use sound with notifications
 //	success = function(), invoked is the user gave permission
 //	error = function(errorString), invoked if failed or the user refused
 //		errorString describes the failure
@@ -1029,9 +1021,9 @@ Notifications are scheduled from the iOS app using a traditional Cordova plugin 
 ```
 watchLink.scheduleNotification(trigger, payload, success, error)
 //	trigger = <Number> | 
-		{ year: <Number>, month: <Number>, day: <Number>, 
-			hour: <Number>, minute: <Number>, 
-			second: <Number> }
+//		{ year: <Number>, month: <Number>, day: <Number>, 
+//			hour: <Number>, minute: <Number>, 
+//			second: <Number> }
 //		If trigger is a number, the notification will occur 
 //			in that number of seconds after the current time.
 //		Otherwise, the date and time are used as the 
@@ -1052,7 +1044,6 @@ watchLink.scheduleNotification(trigger, payload, success, error)
 //			to identify the notification
 //		The timestamp represents the Unix epoch (number of milliseconds 
 //			since 1970/01/01) corresponding to the trigger
-
 //	error = function(errorString)
 //		Invoked when an error occured
 //			errorString = string describing the error
@@ -1074,7 +1065,6 @@ watchLink.retrieveNotifications(success, error)
 //		Each element is the userInfo associated with a notification, with 
 //			userInfo.TIMESTAMP set to the timestamp ID 
 //				of the notification
-
 //	error = function(errorString
 //		Invoked when an error occurred
 //			errorString = string describing the error
@@ -1129,13 +1119,6 @@ watchLink.bindNotificationDelegate(handler)
 //		Use handler = null to cancel a previously bound handler
 //		Otherwise handler will overwrite any previously bound handler
 ```
-#### Display delegated notifications (iOS)
-Delegated notifications will be shown or not (regardless of whether a notification delegate action
-has been defined). By default, they will not be shown.
-```
-watchLink.showDelegatedNotification(show)
-//	show = <boolean>, set to true if delegated notifications should be shown
-```
 #### Define notification handler action (watchOS)
 A notification delegate action can be defined to be invoked to process notifications that arise when the app is in foreground and would normally not be shown.
 ```
@@ -1145,6 +1128,13 @@ bindNotificationHandler(handler: (@escaping (String) -> Void)?)
 //		userInfo["TIMESTAMP"] is the timestamp ID of the notification
 //		Use nil to cancel a previously bound handler
 //		Otherwise handler will overwrite any previously bound handler
+```
+#### Display delegated notifications (iOS)
+Delegated notifications will be shown or not (regardless of whether a notification delegate action
+has been defined). By default, they will not be shown.
+```
+watchLink.showDelegatedNotification(show)
+//	show = <boolean>, set to true if delegated notifications should be shown
 ```
 #### Display delegated notifications (watchOS)
 Delegated notifications will be shown or not (regardless of whether a notification delegate action
@@ -1192,7 +1182,7 @@ watchLink.JSlogLevel(n)
 //	set the log level for Javascript logs to the Javascript console
 //	n = 0, 1, 2, 3 or "none", "error", "app", "all"
 ```
-####Log timestamps
+#### Log timestamps
 
 Log timestamps are generated locally (on the Watch, from iOS Swift or from iOS Javascript). There might be small differences in timestamps generated at exactly the same moment due to absence of clock synchronization, and therefore timestamps from different sources that seem close should be regarded as unreliable indicators of order of events.
 
@@ -1206,7 +1196,7 @@ watchLink.unmuteLog() // unmute logs
 ```
 #### Issue Swift log messages (iOS)
 
-Swift log messages are issued by the plugin communication framework. Other iOS application code can access the logging capabilities as follows:
+Swift log messages are issued by the plugin communication framework. Other iOS Swift application code can access the logging capabilities as follows:
 ```
 func swiftLog(_ msg: String)
 //	Send the message msg to the iOS Xcode and Javascript consoles
@@ -1244,12 +1234,10 @@ func printLog(_ msg: String)
 //	Will apear as "Print[hh:mm:dd]>> msg"
 //	Will be ignored if Watch print log level is "none", "app" or "error"
 
-
 func printAppLog(_ msg: String)
 //	Send the message msg to the Watch Xcode console
 //	Will apear as "Print[hh:mm:dd]App>> msg"
 //	Will be ignored if Watch print log level is "none" or "error"
-
 
 func printErrorLog(_ msg: String)
 //	Send the message msg to the Watch Xcode console
@@ -1261,12 +1249,10 @@ func watchLog(_ msg: String)
 //	Will apear as "<<Watch[hh:mm:dd]>> msg":
 //	Will be ignored if Watch log level is "none", "app" or "error"
 
-
 func watchAppLog(_ msg: String)
 //	Send the message msg to the Watch Xcode and Javascript consoles
 //	Will apear as "<<Watch[hh:mm:dd]App>> msg"
 //	Will be ignored if Watch log level is "none" or "error"
-
 
 func watchErrorLog(_ msg: String)
 //	Send the message msg to the Watch Xcode and Javascript consoles
@@ -1277,7 +1263,7 @@ func watchErrorLog(_ msg: String)
 
 The plugin includes a fully functional test app that illustrates the use of the watchLink messaging framework.
 
-To run the app, open the ```TestWatchLink.xcodeproj``` Xcode file. Set the Team in each of the targets to your team identifier. The app is now ready to run.
+To run the app, open the ```TestWatchLink.xcodeproj``` Xcode file. Set the *Team* in each of the targets to your team identifier. The app is now ready to run.
 
 <img src="iphone.png" align="right" width="250">
 
