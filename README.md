@@ -159,7 +159,6 @@ $
 ```
 This creates the ```multitarget``` directory structure as illustrated below.
 <img src="project-create.png" align="center" width="800">
-
 The watchOS target development can take place in the ```multitarget``` iOS platform directory. After the Watch targets have been created, the file ```WatchLinkExtensionDelegate.swift``` should be added to the Extension and the standard file `ExtensionDelegate.swift` modified as specified above.
 
 ##### Cordova iOS updates
@@ -175,7 +174,6 @@ $
 ```
 This creates the ```multitarget``` directory structure as illustrated below.
 <img src="project-update.png" align="center" width="800">
-
 ## Watch session initialization
 
 The Watch session at the Swift level might not have completed initialization by the time the plugin completes initialization. Therefore, the iOS and watchOS apps must ensure the Watch session is ready before attempting to query its status or send messages to the counterpart.
