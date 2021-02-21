@@ -2,8 +2,7 @@
 <plugin id="cordova-plugin-apple-watch-link" version="1.0.0" xmlns="http://apache.org/cordova/ns/plugins/1.0">
     <name>Apple Watch Link</name>
     <author>Nick Redding</author>
-    <description>Cordova Plugin for the Apple Watch (WatchKit) to allow communication
-        between a Cordova app and an Apple WatchKit Extension (and vice versa)</description>
+    <description>Cordova Plugin for the Apple Watch (WatchKit) to allow communicatn between a Cordova app and an Apple WatchKit Extension (and vice versa)</description>
     <keywords>cordova, apple, watch, watchkit, message, extension, notification</keywords>
     <license>Apache 2.0</license>
     <engines>
@@ -21,9 +20,9 @@
                 <param name="ios-package" value="WatchLink"/>
                 <param name="onload" value="true"/>
             </feature>
-            <preference name="watchLinkAppLogLevel" value="all">
-            <preference name="watchLinkWatchLogLevel" value="all">
-            <preference name="watchLinkWatchPrintLogLevel" value="all">
+            <preference name="watchLinkAppLogLevel" value="all" />
+            <preference name="watchLinkWatchLogLevel" value="all" />
+            <preference name="watchLinkWatchPrintLogLevel" value="all" />
         </config-file>
         <source-file src="src/ios/WatchLink.swift"/>
     </platform>
