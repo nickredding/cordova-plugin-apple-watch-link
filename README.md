@@ -147,13 +147,34 @@ The plugin includes two shell scripts that will facilitate this. These scripts s
 * The script ```clone.sh``` will create a folder ```multitarget``` and copy the iOS platform code to it.
 * The script ```update.sh``` will perform ```cordova prepare ios``` and update the iOS platform code in the ```multitarget``` directory.
 
-The watchOS target development should take place in the ```multitarget``` iOS platform. Subsequent changes to the Cordova iOS platform, plugins and application code can be made to the base project and applied to the multitarget iOS platform via ```update.sh```.
+The watchOS target development should take place in the ```multitarget``` iOS platform directory. Subsequent changes to the Cordova iOS platform, plugins and application code can be made to the base project and applied to the multitarget iOS platform via ```update.sh```.
 
-###### Inital project setup
+##### Inital project setup
 
+After setting up the Cordova iOS project ```AppProject``` under the ```Documents``` directory, the ```multitarget``` directory can be created as illustrated by the following Terminal session.
+```
+$cd Documents/MyAppProject
+$plugins/cordova-plugin-apple-watch-link/clone.sh
+$
+```
+This creates the ```multitarget``` directory structure as illustrated below.
 
 <img src="project-create.png" align="center" width="800">
 
+The watchOS target development can take place in the ```multitarget``` iOS platform directory. After the Watch targets have been created, the file ```WatchLinkExtensionDelegate.swift``` should be added to the Extension and the standard file `ExtensionDelegate.swift` modified as specified above.
+
+##### Cordova iOS updates
+
+Changes to the Cordova iOS app code (platform, plugins and application logic) can be applied to the base project and then applied to the ```multitarget``` iOS platform directory as illustrated by the following Terminal session.
+```
+$cd Documents/MyAppProject
+$plugins/cordova-plugin-apple-watch-link/update.sh AppProject
+
+	Updating AppProject in multitarget/platforms/ios
+	
+$
+```
+This creates the ```multitarget``` directory structure as illustrated below.
 
 <img src="project-develop.png" align="center" width="800">
 
