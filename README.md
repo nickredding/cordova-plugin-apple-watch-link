@@ -163,7 +163,7 @@ The watchOS target development can take place in the ```multitarget``` iOS platf
 
 ##### Cordova iOS updates
 
-Changes to the Cordova iOS app code (platform, plugins and application logic) can be applied to the base project and then applied to the ```multitarget``` iOS platform directory as illustrated by the following Terminal session.
+Changes to the Cordova iOS app code (platform, plugins and application logic) can be applied to the base project and then applied to the ```multitarget``` iOS platform directory as illustrated by the following Terminal session. 
 ```
 $cd Documents/MyAppProject
 $plugins/cordova-plugin-apple-watch-link/update.sh AppProject
