@@ -25,6 +25,24 @@
     "ecosystem:cordova",
     "cordova-ios"
   ],
+  "engines": [
+    {
+      "name": "cordova",
+      "version": ">=10.0.0"
+    },
+    {
+      "name": "apple-ios",
+      "version": ">=14.0.0"
+    }
+    {
+      "name": "cordova-ios",
+      "version": ">=6.1.0"
+    }
+    {
+      "name": "apple-xcode",
+      "version": ">=12.0.0"
+    }
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/nickredding/cordova-plugin-apple-watch-link/issues"
