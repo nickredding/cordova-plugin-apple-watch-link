@@ -32,11 +32,11 @@
     {
       "name": "apple-ios",
       "version": ">=14.0.0"
-    }
+    },
     {
       "name": "cordova-ios",
       "version": ">=6.1.0"
-    }
+    },
     {
       "name": "apple-xcode",
       "version": ">=12.0.0"
