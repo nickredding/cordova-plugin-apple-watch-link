@@ -21,6 +21,9 @@
                 <param name="ios-package" value="WatchLink"/>
                 <param name="onload" value="true"/>
             </feature>
+            <preference name="watchLinkAppLogLevel" value="all">
+            <preference name="watchLinkWatchLogLevel" value="all">
+            <preference name="watchLinkWatchPrintLogLevel" value="all">
         </config-file>
         <source-file src="src/ios/WatchLink.swift"/>
     </platform>
