@@ -174,7 +174,7 @@ $plugins/cordova-plugin-apple-watch-link/update.sh AppProject
 $
 ```
 This creates the ```multitarget``` directory structure as illustrated below.
-<img src="project-develop.png" align="center" width="800">
+<img src="project-update.png" align="center" width="800">
 
 ## Watch session initialization
 
