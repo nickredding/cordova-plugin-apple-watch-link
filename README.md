@@ -158,9 +158,7 @@ $plugins/cordova-plugin-apple-watch-link/clone.sh
 $
 ```
 This creates the ```multitarget``` directory structure as illustrated below.
-
 <img src="project-create.png" align="center" width="800">
-
 The watchOS target development can take place in the ```multitarget``` iOS platform directory. After the Watch targets have been created, the file ```WatchLinkExtensionDelegate.swift``` should be added to the Extension and the standard file `ExtensionDelegate.swift` modified as specified above.
 
 ##### Cordova iOS updates
@@ -175,7 +173,6 @@ $plugins/cordova-plugin-apple-watch-link/update.sh AppProject
 $
 ```
 This creates the ```multitarget``` directory structure as illustrated below.
-
 <img src="project-develop.png" align="center" width="800">
 
 ## Watch session initialization
