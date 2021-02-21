@@ -6,9 +6,7 @@ The following points should be noted.
 
 * An existing Cordova iOS app can be extended to include a companion WatchKit extension by opening the app project in Xcode and adding a "Watch App for iOS App" target.
 
-* After the companion WatchKit app target has been added, **you cannot use any functions of the Cordova CLI on the project** since this will damage the project and make it unusable. All further additions or modifications to the iOS code must be made via Xcode. Therefore, all required Cordova plugins must be installed before the WatchKit app target is added, and any changes to the HTML and Javascript code of the app (including plugins) must be applied directly to the *Staging* directory of the Xcode project.
-
-* Updating the iOS platform (or making other significant changes to the Cordova app) will necessitate creating a new Xcode project and migrating the WatchOS files from the previous project.
+* After the companion WatchKit app target has been added, **you cannot use any functions of the Cordova CLI on the project** since this will damage the project and make it unusable. All further additions or modifications to the project must be made via Xcode. Therefore, all required Cordova plugins must be installed before the WatchKit app target is added, and any changes to the HTML and Javascript code of the app (including plugins) must be applied directly to the *Staging* directory of the Xcode project.
 
 * The companion WatchKit app target must be coded in Swift, and use the WatchKit App Delegate lifecycle.
 
@@ -139,6 +137,25 @@ To launch using iPhone and Watch devices, connect your iPhone to your Mac and ru
 * This will result in both Xcode consoles being available (selected from the console selector). 
 
 * You can open a Web Inspector window from Safari to inspect the iOS Cordova app and view the console, which will show watchLink log messages from both the iOS app and the Watch.
+
+#### iOS platform and plugin maintenance
+
+As an alternative to making all Cordova iOS additions or modifications to the project via Xcode, a base project representing only the the Cordova iOS app can be maintained, and updates to the Cordova iOS app can be applied to a separate project that contains the complete app (iOS and watchOS targets).
+
+The plugin includes two shell scripts that will facilitate this. These scripts should be run from a terminal window with the current directory set to the base project directory.
+
+* The script ```clone.sh``` will create a folder ```multitarget``` and copy the iOS platform code to it.
+* The script ```update.sh``` will perform ```cordova prepare ios``` and update the iOS platform code in the ```multitarget``` directory.
+
+The watchOS target development should take place in the ```multitarget``` iOS platform. Subsequent changes to the Cordova iOS platform, plugins and application code can be made to the base project and applied to the multitarget iOS platform via ```update.sh```.
+
+###### Inital project setup
+
+
+<img src="project-create.png" align="center" width="800">
+
+
+<img src="project-develop.png" align="center" width="800">
 
 ## Watch session initialization
 
