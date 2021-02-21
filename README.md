@@ -176,7 +176,7 @@ $
 ```
 This creates the ```multitarget``` directory structure as illustrated below.
 
-<img src="project-develop.png" align="center" width="700">
+<img src="project-develop.png" align="center" width="800">
 
 ## Watch session initialization
 
