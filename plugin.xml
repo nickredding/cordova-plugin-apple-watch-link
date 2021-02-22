@@ -33,6 +33,6 @@
 		  Execute "clone.sh" in Terminal to create the watchtarget project.
 		  Execute "update.sh" in Terminal to update the watchtarget iOS project.
         </info>
-        <hook type="after_plugin_install" src="note.sh">
+        <hook type="after_plugin_install" src="note.sh" />
     </platform>
 </plugin>
