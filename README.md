@@ -154,6 +154,7 @@ The watchOS target development should take place in the ```multitarget``` iOS pl
 After setting up the Cordova iOS project ```AppProject``` under the ```Documents``` directory, the ```multitarget``` directory can be created as illustrated by the following Terminal session.
 ```
 $cd Documents/MyAppProject
+$chmod 777 plugins/cordova-plugin-apple-watch-link//*.*
 $plugins/cordova-plugin-apple-watch-link/clone.sh
 $
 ```
