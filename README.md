@@ -116,6 +116,8 @@ The following modifications to the Xcode project are necessary after creating th
 
 * Set the bundle version and bundle version (short) to 1.0.0 for both the watchOS app and extension.
 
+* Set the Swift Language Version to 5 under Build Settings for the iOS app (ignore the warning message about the project containing Swift Version 3 code)
+
 * Accept Xcode recommendations to update project settings.
 
 Now add the watchOS app and extension files.
@@ -144,37 +146,37 @@ As an alternative to making all Cordova iOS additions or modifications to the pr
 
 The plugin includes two shell scripts that will facilitate this. These scripts should be run from a terminal window with the current directory set to the base project directory.
 
-* The script ```clone.sh``` will create a folder ```multitarget``` and copy the iOS platform code to it.
-* The script ```update.sh``` will perform ```cordova prepare ios``` and update the iOS platform code in the ```multitarget``` directory.
+* The script ```clone.sh``` will create a folder ```watchtarget``` and copy the iOS platform code to it.
+* The script ```update.sh``` will perform ```cordova prepare ios``` and update the iOS platform code in the ```watchtarget``` directory.
 
-The watchOS target development should take place in the ```multitarget``` iOS platform directory. Subsequent changes to the Cordova iOS platform, plugins and application code can be made to the base project and applied to the multitarget iOS platform via ```update.sh```.
+The watchOS target development should take place in the ```watchtarget``` iOS platform directory. Subsequent changes to the Cordova iOS platform, plugins and application code can be made to the base project and applied to the watchtarget iOS platform via ```update.sh```.
 
 ##### Inital project setup
 
-After setting up the Cordova iOS project ```AppProject``` under the ```Documents``` directory, the ```multitarget``` directory can be created as illustrated by the following Terminal session.
+After setting up the Cordova iOS project ```AppProject``` under the ```Documents``` directory, the ```watchtarget``` directory can be created as illustrated by the following Terminal session.
 ```
 $cd Documents/MyAppProject
 $chmod 777 plugins/cordova-plugin-apple-watch-link//*.*
 $plugins/cordova-plugin-apple-watch-link/clone.sh
 $
 ```
-This creates the ```multitarget``` directory structure as illustrated below.
+This creates the ```watchtarget``` directory structure as illustrated below.
 <img src="project-create.png" align="center" width="800">
 
-The watchOS target development can take place in the ```multitarget``` iOS platform directory. After the Watch targets have been created, the file ```WatchLinkExtensionDelegate.swift``` should be added to the Extension and the standard file `ExtensionDelegate.swift` modified as specified above.
+The watchOS target development can take place in the ```watchtarget``` iOS platform directory. After the Watch targets have been created, the file ```WatchLinkExtensionDelegate.swift``` should be added to the Extension and the standard file `ExtensionDelegate.swift` modified as specified above.
 
 ##### Cordova iOS updates
 
-Changes to the Cordova iOS app code (platform, plugins and application logic) can be applied to the base project and then applied to the ```multitarget``` iOS platform directory as illustrated by the following Terminal session. 
+Changes to the Cordova iOS app code (platform, plugins and application logic) can be applied to the base project and then applied to the ```watchtarget``` iOS platform directory as illustrated by the following Terminal session. 
 ```
 $cd Documents/MyAppProject
 $plugins/cordova-plugin-apple-watch-link/update.sh AppProject
 
-	Updating AppProject in multitarget/platforms/ios
+	Updating AppProject in watchtarget/platforms/ios
 	
 $
 ```
-This updates the ```multitarget``` directory structure as illustrated below.
+This updates the ```watchtarget``` directory structure as illustrated below.
 <img src="project-update.png" align="center" width="800">
 ## Watch session initialization
 

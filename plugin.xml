@@ -25,12 +25,13 @@
             <preference name="watchLinkWatchPrintLogLevel" value="all" />
         </config-file>
         <source-file src="src/ios/WatchLink.swift"/>
-        <source-file src="clone.sh" target-dir="../../.." />
-        <source-file src="update.sh" target-dir="../../.." />
         <info>
         Plugin Notes:
-          Swift version must be set to 5 under build settings.
+          Swift Language Version must be set to 5 under Build Settings for this app in Xcode.
+		  Execute "cp plugins/cordova-plugin-apple-watch-link/*.sh"
           Execute "chmod 777 *.sh" in Terminal to make clone.sh and update.sh executable.
+		  Execute "clone.sh" in Terminal to create the watchtarget project.
+		  Execute "update.sh" in Terminal to update the watchtarget iOS project.
         </info>
     </platform>
 </plugin>
