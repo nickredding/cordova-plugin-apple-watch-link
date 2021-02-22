@@ -29,8 +29,8 @@
         Plugin Notes:
           Execute "cp plugins/cordova-plugin-apple-watch-link/*.sh ."
           Execute "chmod 777 *.sh" in Terminal to make clone.sh and update.sh executable.
-          Execute "clone.sh" in Terminal to create the watchtarget project.
-          Execute "update.sh" in Terminal to update the watchtarget iOS project.
+          Execute "./clone.sh" in Terminal to create the watchtarget project.
+          Execute "./update.sh" in Terminal to update the watchtarget iOS project.
         </info>
     </platform>
 </plugin>
