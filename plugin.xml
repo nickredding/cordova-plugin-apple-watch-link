@@ -27,12 +27,10 @@
         <source-file src="src/ios/WatchLink.swift"/>
         <info>
         Plugin Notes:
-          Swift Language Version must be set to 5 under Build Settings for this app in Xcode.
-		  Execute "cp plugins/cordova-plugin-apple-watch-link/*.sh"
+          Execute "cp plugins/cordova-plugin-apple-watch-link/*.sh"
           Execute "chmod 777 *.sh" in Terminal to make clone.sh and update.sh executable.
-		  Execute "clone.sh" in Terminal to create the watchtarget project.
-		  Execute "update.sh" in Terminal to update the watchtarget iOS project.
+          Execute "clone.sh" in Terminal to create the watchtarget project.
+          Execute "update.sh" in Terminal to update the watchtarget iOS project.
         </info>
-        <hook type="after_plugin_install" src="note.sh" />
     </platform>
 </plugin>
