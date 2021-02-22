@@ -112,7 +112,7 @@ The file `WatchLinkExtensionDelegate.swift` provides the framework for communica
 
 The following modifications to the Xcode project are necessary after creating the WatchKit app target:
 
-* Remove the bridging header reference under build settings for the watchOS app (but **not** for the watchOS app extension).
+* Remove the bridging header reference under build settings for the watchOS app extension (but **not** for the watchOS app).
 
 * Set the bundle version and bundle version (short) to 1.0.0 for both the watchOS app and extension.
 
