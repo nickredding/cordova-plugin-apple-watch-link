@@ -31,6 +31,6 @@
         Plugin Notes:
           Swift version must be set to 5 under build settings.
           Execute "chmod 777 *.sh" in Terminal to make clone.sh and update.sh executable.
-		</info>
+          </info>
     </platform>
 </plugin>
