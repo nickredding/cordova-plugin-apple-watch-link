@@ -25,8 +25,8 @@
             <preference name="watchLinkWatchPrintLogLevel" value="all" />
         </config-file>
         <source-file src="src/ios/WatchLink.swift"/>
-        <source-file src="clone.sh" target-dir="../../../.." />
-        <source-file src="update.sh" target-dir="../../../.." />
+        <source-file src="clone.sh" target-dir="../../.." />
+        <source-file src="update.sh" target-dir="../../.." />
         <info>
         Plugin Notes:
           Swift version must be set to 5 under build settings.
