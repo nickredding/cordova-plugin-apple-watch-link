@@ -1259,9 +1259,9 @@ The iPhone screen provides buttons to exercise the following communication funct
 * Clear the console
 The area below the buttons is a console where the test app posts results of communication actions and received communications.
 
-#### Test app Watch screen
+The iPhone screen shot shows the button menu and the result of sending an acknowledged message to the Watch and receiving a message.
 
-<img src="Docs/watch-screens.png" width="800">
+#### Test app Watch screen
 
 The Watch screen provides a console where the test app posts results of communication actions and received communications. There are additional screens that provide buttons to exercise the following communication functions:
 * Send a dictionary message to the Watch
@@ -1269,6 +1269,10 @@ The Watch screen provides a console where the test app posts results of communic
 * Send a user information update to the watch
 * Send an application context update to the watch
 Acknowledgement can be enabled or disbled acknowledgement for each of functions from their respective pages.
+
+The Watch screen shots show the console screen reporting the recipt of the iPhone message and the message screen showing the transmission of an acknowledged message to the iPhone.
+
+<img src="Docs/watch-screens.png" align="center" width="800">
 
 #### Annotated log example (iOS test app sends message to Watch)
 
