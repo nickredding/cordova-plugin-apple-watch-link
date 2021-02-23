@@ -311,6 +311,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 
 	func sessionWatchStateDidChange(_ session: WCSession) {
 		sendLog("WatchLink session state change")
+		notifyAvailability()
         notifyApplicationState()
 	}
 
