@@ -175,11 +175,11 @@ func updateContextToPhone(_ context: [String: Any], ack: Bool = false,
 }
 
 private func logDefaultDataMessage(_:Data) -> Void {
-	print("Message Data Default")
+	print("Data message handler not bound")
 }
 
 private func logDefaultMessage(_ msgType: String, _ msgBody: Any) -> Void {
-	print("Message Default " + msgType + ": " + String(describing: msgBody))
+	print("Message default handler not bound " + msgType + ": " + String(describing: msgBody))
 }
 
 var watchLogLevel = 3
@@ -668,14 +668,16 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 	func handleMessage(message: [String : Any]) {
         guard let session = message["session"] as? Int64
 		else {
-			printErrorLog("didReceiveMessage SESSION not found message=" + 
+			printLog("didReceiveMessage SESSION not found message=" + 
 				String(describing: message))
+			defaultAppMessageHandler("", message)
 			return
 		}
         guard let msgType = message["msgType"] as? String
         else {
-            printErrorLog("didReceiveMessage msgType not found message=" +
+            printLog("didReceiveMessage msgType not found message=" +
                 String(describing: message))
+			defaultAppMessageHandler("", message)
             return
         }
 		if (session < sessionID) {
@@ -692,8 +694,9 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
         }
         guard let msgBody = message["msgBody"]
 		else {
-			printErrorLog("didReceiveMessage msgBody not found message=" + 
+			printLog("didReceiveMessage msgBody not found message=" + 
 				String(describing: message))
+			defaultAppMessageHandler("", message)
 			return
 		}
 		switch msgType {
@@ -783,6 +786,18 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
         printLog("Received message " + String(describing: message))
 	}
 	
+	func session(_ session: WCSession, 
+		didReceiveMessageData message: Data, replyHandler: @escaping (Data) -> Void) 
+	{
+		replyHandler(message)
+		watchAppDataMessageHandler(message)
+	}
+	
+	func session(_ session: WCSession, didReceiveMessageData message: Data) -> Void
+	{
+		watchAppDataMessageHandler(message)
+	}
+	
 	func sendMessage(msgType: String, msgBody: [String: Any], ack: Bool = false, 
 		ackHandler: (@escaping (String) -> Void) = nullHandler, 
 		errHandler: (@escaping (String) -> Void) = nullHandler) -> Int64 
@@ -804,24 +819,33 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
         printLog("Received user info " + String(describing: userInfo))
 		guard let timestamp = userInfo["TIMESTAMP"] as? Int64
 		else {
-			printErrorLog("didReceiveUserInfo TIMESTAMP not found message=" +
+			printLog("didReceiveUserInfo TIMESTAMP not found message=" +
 				String(describing: userInfo))
+			if (watchUserInfoHandler != nil) {
+				watchUserInfoHandler!(timestamp, userInfo)
+			}
 			return
 		}
 		guard let ack = userInfo["ACK"] as? Bool
 		else {
-			printErrorLog("didReceiveUserInfo ACK not found userInfo=" + 
+			printLog("didReceiveUserInfo ACK not found userInfo=" + 
 				String(describing: userInfo))
+			if (watchUserInfoHandler != nil) {
+				watchUserInfoHandler!(timestamp, userInfo)
+			}
 			return
 		}
 		guard let session = userInfo["SESSION"] as? Int64
 		else {
-			printErrorLog("didReceiveUserInfo SESSION not found userInfo=" + 
+			printLog("didReceiveUserInfo SESSION not found userInfo=" + 
 				String(describing: userInfo))
+			if (watchUserInfoHandler != nil) {
+				watchUserInfoHandler!(timestamp, userInfo)
+			}
 			return
 		}
 		if (session < sessionID) {
-			printErrorLog("didReceiveUserInfo SESSION obsolete userInfo=" + 
+			printLog("didReceiveUserInfo SESSION obsolete userInfo=" + 
 				String(describing: userInfo))
 			return
 		}
@@ -855,23 +879,32 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
         printLog("Received context " + String(describing: applicationContext))
 		guard let timestamp = applicationContext["TIMESTAMP"] as? Int64
 		else {
-			printErrorLog("didReceiveApplicationContext TIMESTAMP not found" +
+			printLog("didReceiveApplicationContext TIMESTAMP not found" +
 				" applicationContext=" +
 				String(describing: applicationContext))
+			if (watchContextHandler != nil) {
+				watchContextHandler!(timestamp, applicationContext)
+			}
 			return
 		}
 		guard let ack = applicationContext["ACK"] as? Bool
 		else {
-			printErrorLog("didReceiveApplicationContext ACK not found " +
+			printLog("didReceiveApplicationContext ACK not found " +
 				"applicationContext=" + 
 				String(describing: applicationContext))
+			if (watchContextHandler != nil) {
+				watchContextHandler!(timestamp, applicationContext)
+			}
 			return
 		}
 		guard let session = applicationContext["SESSION"] as? Int64
 		else {
-			printErrorLog("didReceiveApplicationContext SESSION not found " +
+			printLog("didReceiveApplicationContext SESSION not found " +
 				"applicationContext=" + 
 				String(describing: applicationContext))
+			if (watchContextHandler != nil) {
+				watchContextHandler!(timestamp, applicationContext)
+			}
 			return
 		}
 		if (session > sessionID) {

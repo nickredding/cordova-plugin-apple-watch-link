@@ -6,7 +6,7 @@ The following points should be noted.
 * An existing Cordova iOS app can be extended to include a companion WatchKit extension by opening the app project in Xcode and adding a "Watch App for iOS App" target.
 * The companion WatchKit app target must be coded in Swift, and use the WatchKit App Delegate lifecycle.
 * After the companion WatchKit app target has been added, **you cannot use any functions of the Cordova CLI on the project** since this will damage the project and make it unusable. All further additions or modifications to the project must be made via Xcode. Therefore, all required Cordova plugins must be installed before the WatchKit app target is added, and any changes to the HTML and Javascript code of the app (including plugins) must be applied directly to the *Staging* directory of the Xcode project.
-* As an alternative to making all Cordova iOS additions or modifications to the project via Xcode, a base project representing only the the Cordova iOS app can be maintained, and updates to the Cordova iOS app can be applied to a separate project that contains the complete app (iOS and watchOS targets).
+* As an alternative to making all Cordova iOS additions or modifications to the project via Xcode, a baseline project representing only the the Cordova iOS app can be maintained, and updates to the Cordova iOS app can be applied to a separate project that contains the complete app (iOS and watchOS targets).
 * This plugin and companion Watchkit framework has been designed and tested for the latest versions of Cordova (10.0.0), Cordova iOS (6.2.0), iOS (14), watchOS (7), Xcode(12) and Swift (5). Compatibility with earlier versions of any of these components is not assured and will not be addressed.
 * This plugin includes a fully functional [test app](#watchlink-test-app) that illustrates the use of the watchLink messaging framework.
 #### Design objectives
@@ -108,34 +108,38 @@ To launch using iPhone and Watch devices, connect your iPhone to your Mac and ru
 * You can open a Web Inspector window from Safari to inspect the iOS Cordova app and view the console, which will show watchLink log messages from both the iOS app and the Watch.
 #### iOS platform and plugin maintenance
 
-As an alternative to making all Cordova iOS additions or modifications to the project via Xcode, a base project representing only the the Cordova iOS app can be maintained, and updates to the Cordova iOS app can be applied to a separate project that contains the complete app (iOS and watchOS targets).
+As an alternative to making all Cordova iOS additions or modifications to the project via Xcode, a baseline project representing only the the Cordova iOS app can be maintained, and updates to the Cordova iOS app can be applied to a separate project that contains the complete app (iOS and watchOS targets).
 
-The plugin includes two shell scripts that will facilitate this. These scripts should be run from a terminal window with the current directory set to the base project directory.
+The plugin includes two shell scripts that will facilitate this. These scripts should be run from a terminal window with the current directory set to the baseline project directory.
 * The script ```clone.sh``` will create a folder ```watchtarget``` and copy the iOS platform code to it.
 * The script ```update.sh``` will perform ```cordova prepare ios``` and update the iOS platform code in the ```watchtarget``` directory.
-The watchOS target development should take place in the ```watchtarget``` iOS platform directory. Subsequent changes to the Cordova iOS platform, plugins and application code can be made to the base project and applied to the watchtarget iOS platform via ```update.sh```.
+The watchOS target development should take place in the ```watchtarget``` iOS platform directory. Subsequent changes to the Cordova iOS platform, plugins and application code can be made to the baseline project and applied to the watchtarget iOS platform via ```update.sh```.
 
 ##### Inital project setup
 
 After setting up the Cordova iOS project ```MyAppProject``` under the ```Documents``` directory, the plugin can be installed and the  ```watchtarget``` directory can be created as illustrated by the following Terminal session.
 ```
-$cd Documents/MyAppProject
+$cd Documents/AppProject
 cordova plugin add cordova-plugin-apple-watch-link
-$chmod 777 plugins/cordova-plugin-apple-watch-link/*.sh
 $cp plugins/cordova-plugin-apple-watch-link/*.sh .
+$chmod 777 *.sh
 $./clone.sh
 $
 ```
 This creates the ```watchtarget``` directory structure as illustrated below.
 <img src="Docs/project-create.png" align="center" width="800">
 
-The watchOS target development can take place in the ```watchtarget``` iOS platform directory. After the Watch targets have been created, the file ```WatchLinkExtensionDelegate.swift``` should be added to the Extension and the standard file `ExtensionDelegate.swift` modified as specified above.
+The watchOS target development can take place in the ```watchtarget``` iOS platform directory. Open this project from ```AppProject.xcodeproj``` in the ```watchtarget/platforms/ios``` directory.
+
+**Note:** XCode will show the ```config.xml``` and ```www``` items in the project root as missing. This is not an error. These represent items in the baseline project which should be updated there as necessary.
+
+After the Watch targets have been created, the file ```WatchLinkExtensionDelegate.swift``` should be added to the Extension and the standard file `ExtensionDelegate.swift` modified as specified above.
 
 ##### Cordova iOS updates
 
-Changes to the Cordova iOS app code (platform, plugins and application logic) can be applied to the base project and then applied to the ```watchtarget``` iOS platform directory as illustrated by the following Terminal session. 
+Changes to the Cordova iOS app code (platform, plugins and application logic) can be applied to the baseline project and then applied to the ```watchtarget``` iOS platform directory as illustrated by the following Terminal session. 
 ```
-$cd Documents/MyAppProject
+$cd Documents/AppProject
 $.update.sh AppProject
 
 	Updating AppProject in watchtarget/platforms/ios
@@ -144,6 +148,9 @@ $
 ```
 This updates the ```watchtarget``` directory structure as illustrated below.
 <img src="Docs/project-update.png" align="center" width="800">
+
+**Note:** The update script does **not** copy any non-code resources to the ```watchtarget/platforms/io```. Graphic assets, storyboards and plist files (which should be developed from Xcode within the ```watchtarget/platforms/ios``` project) are not affected.
+
 ## Watch session initialization
 
 The Watch session at the Swift level might not have completed initialization by the time the plugin completes initialization. Therefore, the iOS and watchOS apps must ensure the Watch session is ready before attempting to query its status or send messages to the counterpart.
@@ -432,7 +439,7 @@ UPDATEDCONTEXT, UPDATEDUSERINFO, WATCHLOG, WATCHERRORLOG, WATCHAPPLOG.
 ```
 The iOS app and watchOS app can bind a default message handler to receive messages with message types that are not bound.
 
-#### Message transmission (iOS)
+#### Dictionary message transmission (iOS)
 
 Dictionary messages are sent from the iOS app using a traditional Cordova plugin call, as in
 ```
@@ -473,7 +480,7 @@ A dictionary message that is sent with acknowledgement will block subsequent dic
 
 Note that regardless of acknowledgement, messages are sent and delivered in the order in which they are dispatched.
 
-#### Message transmission (watchOS)
+#### Dictionary message transmission (watchOS)
 
 Dictionary messages are sent from the watchOS app using a call to the function ```messageToPhone.```
 ```
@@ -488,11 +495,11 @@ The ```errHandler``` function (if provided) will be invoked in the case of an er
 
 This function returns the unique timestamp assigned to the message, and this value is provided to the ```ackHandler``` and ```errHandler``` functions.
 
-#### Message flushing
+#### Dictionary message flushing
 
 Any outstanding messages can be flushed from the outgoing message queue using ```watchLink.flushMessages()``` on the iOS side and ```flushMessages()``` on the watchOS app side. The error handlers for flushed messages are **not** invoked. Note that any acknowledgements that arrive for flushed messages are ignored (the success handlers are **not** invoked).
 
-#### Message receipt (iOS)
+#### Dictionary message receipt (iOS)
 
 Handlers can be bound to specific message types, and are invoked to process incoming messages with the corresponding type.
 ```
@@ -509,7 +516,7 @@ To handle an incoming message, the message type is extracted and each handler wi
 * Supplying null for the handler will unbind a previously bound handler.
 * Supplying a handler for an existing match expression will overwrite the existing handler for that expression.
 * Supplying null for the match expression will set the default handler, unless it is null also in which case the default handler will be unbound.
-#### Message receipt (watchOS)
+#### Dictionary message receipt (watchOS)
 
 Message handlers in the watchOS app are bound using ```bindMessageHandler``` and ```bindDefaultMessageHandler.```
 ```
@@ -522,6 +529,12 @@ bindMessageHandler(msgRegex: String,
 bindDefaultMessageHandler(handler: @escaping ((String, [String: Any]) -> Void))
 ```
 Message processing in the watchOS app is handled in the same way as on the iOS app.
+
+#### Nonconforming dictionary message handling
+
+It is possible to use the ```WCSession``` interface directly for sending messages to the counterpart. This will bypass the watchLink framework and these messages will be detected as nonconforming and delivered to the default message handlers (if configured).
+
+Note that if you access the ```WCSession``` interface directly your code is responsible for error handling and ensuring that he counterpart app is reachable before sending messages.
 
 ## Data message passing
 
@@ -594,6 +607,11 @@ A data message handler in the watchOS app is bound using ```bindDataMessageHandl
 ```
 bindDataMessageHandler(handler: @escaping ((Data) -> Bool))
 ```
+#### Nonconforming dictionary message handling
+
+It is possible to use the ```WCSession``` interface directly for sending data messages to the counterpart. This will bypass the watchLink framework and these messages will be detected as nonconforming and delivered to the data message handlers (if configured).
+
+Note that if you access the ```WCSession``` interface directly your code is responsible for error handling and ensuring that he counterpart app is reachable before sending messages.
 
 ## User information transfers
 
@@ -758,6 +776,12 @@ User information transfer handlers in the watchOS app are bound using ```bindUse
 ```
 bindUserInfoHandler(handler: @escaping (([String: Any]) -> Void))
 ```
+#### Nonconforming user information transfer handling
+
+It is possible to use the ```WCSession``` interface directly for transfering user information to the counterpart. This will bypass the watchLink framework and these transfers will be detected as nonconforming and delivered to the user information handlers (if configured).
+
+Note that if you access the ```WCSession``` interface directly your code is responsible for error handling and ensuring that he counterpart app is available before sending messages.
+
 ## Application context transfers
 
 A dictionary of values representing application context information may be transmitted in either direction. These transfers can occur in background (when the watchOS app is not reachable, i.e. the watchOS app is not in foreground).
@@ -874,6 +898,11 @@ Application context transfer handlers in the watchOS app are bound using ```bind
 ```
 bindContextHandler(handler: @escaping (([String: Any]) -> Void))
 ```
+#### Nonconforming application context transfer handling
+
+It is possible to use the ```WCSession``` interface directly for transfering application contexts to the counterpart. This will bypass the watchLink framework and these transfers will be detected as nonconforming and delivered to the user information handlers (if configured).
+
+Note that if you access the ```WCSession``` interface directly your code is responsible for error handling and ensuring that he counterpart app is available before sending messages.
 ## Complication data transfers
 
 A dictionary of values representing complication data may be transmitted in either direction. These transfers can occur in background (when the watchOS app is not reachable, i.e. the watchOS app is not in foreground).

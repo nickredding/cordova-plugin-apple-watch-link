@@ -898,11 +898,9 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 				messageAs: ["msgType": "", "msg": message])
 			result!.setKeepCallbackAs(true)
 			self.commandDelegate.send(result, callbackId: receivedMessageCallbackId)
-			sendLog("handleNativeMessage: message = " + String(describing: message))
 		}
 		else {
-			sendLog("didReceiveNativeMessage not bound: message = " + 
-				String(describing: message))
+			sendLog("didReceiveNativeMessage not bound")
 		}
 	}
 	
@@ -912,11 +910,9 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 				messageAs: ["msgType": "", "msg": message])
 			result!.setKeepCallbackAs(true)
 			self.commandDelegate.send(result, callbackId: receivedMessageCallbackId)
-			sendLog("handleNativeMessageNoAck: message = " + String(describing: message))
 		}
 		else {
-			sendLog("didReceiveNativeMessage not bound: message = " + 
-				String(describing: message))
+			sendLog("didReceiveNativeMessage not bound")
 		}
 	}
     
@@ -927,30 +923,30 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 	{
 		guard let msgType = message["msgType"] as? String
 		else {
-			handleNativeMessage(message, replyHandler)
-			sendErrorLog("didReceiveMessage msgType not found message=" + 
+			sendLog("didReceiveMessage msgType not found message=" + 
 				String(describing: message))
+			handleNativeMessage(message, replyHandler)
 			return
 		}
 		guard let msgBody = message["msgBody"]
 		else {
-			handleNativeMessage(message, replyHandler)
-			sendErrorLog("didReceiveMessage msgBody not found message=" + 
+			sendLog("didReceiveMessage msgBody not found message=" + 
 				String(describing: message))
+			handleNativeMessage(message, replyHandler)
 			return
 		}
 		guard let timestamp = message["timestamp"] as? Int64
 		else {
-			handleNativeMessage(message, replyHandler)
-			sendErrorLog("didReceiveMessage timestamp not found message=" + 
+			sendLog("didReceiveMessage timestamp not found message=" + 
 				String(describing: message))
+			handleNativeMessage(message, replyHandler)
 			return
 		}
 		guard let session = message["session"] as? Int64
 		else {
-			handleNativeMessage(message, replyHandler)
-			sendErrorLog("didReceiveMessage session not found message=" + 
+			sendLog("didReceiveMessage session not found message=" + 
 				String(describing: message))
+			handleNativeMessage(message, replyHandler)
 			return
 		}
 		replyHandler(["timestamp" : timestamp])
@@ -975,30 +971,30 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 	func session(_ session: WCSession, didReceiveMessage message: [String : Any]) -> Void {
 		guard let msgType = message["msgType"] as? String
 		else {
-			handleNativeMessageNoAck(message)
-			sendErrorLog("didReceiveMessage msgType not found message=" + 
+			sendLog("didReceiveMessage msgType not found message=" + 
 				String(describing: message))
+			handleNativeMessageNoAck(message)
 			return
 		}
 		guard let msgBody = message["msgBody"]
 		else {
-			handleNativeMessageNoAck(message)
-			sendErrorLog("didReceiveMessage msgBody not found message=" + 
+			sendLog("didReceiveMessage msgBody not found message=" + 
 				String(describing: message))
+			handleNativeMessageNoAck(message)
 			return
 		}
 		guard let session = message["session"] as? Int64
 		else {
-			handleNativeMessageNoAck(message)
-			sendErrorLog("didReceiveMessage SESSION not found message=" + 
+			sendLog("didReceiveMessage SESSION not found message=" + 
 				String(describing: message))
+			handleNativeMessageNoAck(message)
 			return
 		}
         guard let timestamp = message["timestamp"] as? Int64
         else {
-            handleNativeMessageNoAck(message)
-            sendErrorLog("didReceiveMessage timestamp not found message=" +
+            sendLog("didReceiveMessage timestamp not found message=" +
                 String(describing: message))
+            handleNativeMessageNoAck(message)
             return
         }
         if (!msgType.matches("^WATCH.*LOG$")) {
@@ -1019,7 +1015,6 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
         handleMessage(msgType: msgType, msgBody: msgBody, timestamp: timestamp)
 	}
 	
-
 	func session(_ session: WCSession, 
 		didReceiveMessageData message: Data, replyHandler: @escaping (Data) -> Void) 
 	{
