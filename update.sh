@@ -13,4 +13,7 @@ rsync -a  platforms/ios/$1/config.xml watchtarget/platforms/ios/$1
 rsync -a  platforms/ios/$1/main.m watchtarget/platforms/ios/$1
 rsync -a  platforms/ios/www watchtarget/platforms/ios
 rsync -a  platforms/ios/ios.json watchtarget/platforms/ios/ios.json
+echo ""
+echo "Update complete"
+echo ""
 
