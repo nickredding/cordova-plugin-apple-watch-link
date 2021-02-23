@@ -822,7 +822,7 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 			printLog("didReceiveUserInfo TIMESTAMP not found message=" +
 				String(describing: userInfo))
 			if (watchUserInfoHandler != nil) {
-				watchUserInfoHandler!(timestamp, userInfo)
+				watchUserInfoHandler!(-1, userInfo)
 			}
 			return
 		}
@@ -831,7 +831,7 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 			printLog("didReceiveUserInfo ACK not found userInfo=" + 
 				String(describing: userInfo))
 			if (watchUserInfoHandler != nil) {
-				watchUserInfoHandler!(timestamp, userInfo)
+				watchUserInfoHandler!(-1, userInfo)
 			}
 			return
 		}
@@ -840,7 +840,7 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 			printLog("didReceiveUserInfo SESSION not found userInfo=" + 
 				String(describing: userInfo))
 			if (watchUserInfoHandler != nil) {
-				watchUserInfoHandler!(timestamp, userInfo)
+				watchUserInfoHandler!(-1, userInfo)
 			}
 			return
 		}
@@ -883,7 +883,7 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 				" applicationContext=" +
 				String(describing: applicationContext))
 			if (watchContextHandler != nil) {
-				watchContextHandler!(timestamp, applicationContext)
+				watchContextHandler!(-1, applicationContext)
 			}
 			return
 		}
@@ -893,7 +893,7 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 				"applicationContext=" + 
 				String(describing: applicationContext))
 			if (watchContextHandler != nil) {
-				watchContextHandler!(timestamp, applicationContext)
+				watchContextHandler!(-1, applicationContext)
 			}
 			return
 		}
@@ -903,12 +903,12 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 				"applicationContext=" + 
 				String(describing: applicationContext))
 			if (watchContextHandler != nil) {
-				watchContextHandler!(timestamp, applicationContext)
+				watchContextHandler!(-1, applicationContext)
 			}
 			return
 		}
 		if (session > sessionID) {
-            printErrorLog("didReceiveApplicationContext SESSION invalid session ID " + String(session) + ", applicationContext=" +
+            printLog("didReceiveApplicationContext SESSION invalid session ID " + String(session) + ", applicationContext=" +
                 String(describing: applicationContext))
 			return
 		}

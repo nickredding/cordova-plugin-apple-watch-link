@@ -1136,23 +1136,23 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
         sendLog("Received user info " + String(describing: userInfo))
 		guard let timestamp = userInfo["TIMESTAMP"] as? Int64
 		else {
-			handleNativeUserInfo(userInfo)
-			sendErrorLog("didReceiveUserInfo TIMESTAMP not found userInfo=" + 
+			sendLog("didReceiveUserInfo TIMESTAMP not found userInfo=" + 
 				String(describing: userInfo))
+			handleNativeUserInfo(userInfo)
 			return
 		}
 		guard let ack = userInfo["ACK"] as? Bool
 		else {
-			handleNativeUserInfo(userInfo)
-			sendErrorLog("didReceiveUserInfo ACK not found userInfo=" + 
+			sendLog("didReceiveUserInfo ACK not found userInfo=" + 
 				String(describing: userInfo))
+			handleNativeUserInfo(userInfo)
 			return
 		}
 		guard let session = userInfo["SESSION"] as? Int64
 		else {
-			handleNativeUserInfo(userInfo)
-			sendErrorLog("didReceiveUserInfo SESSION not found userInfo=" + 
+			sendLog("didReceiveUserInfo SESSION not found userInfo=" + 
 				String(describing: userInfo))
+			handleNativeUserInfo(userInfo)
 			return
 		}
 		if (session != 0 && session != sessionID) {
@@ -1289,23 +1289,23 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
         sendLog("Received context " + String(describing: applicationContext))
 		guard let timestamp = applicationContext["TIMESTAMP"] as? Int64
 		else {
-			handleNativeContext(applicationContext)
-			sendErrorLog("didReceiveApplicationContext TIMESTAMP not found " +
+			sendLog("didReceiveApplicationContext TIMESTAMP not found " +
 				"applicationContext=" + String(describing: applicationContext))
+			handleNativeContext(applicationContext)
 			return
 		}
 		guard let ack = applicationContext["ACK"] as? Bool
 		else {
-			handleNativeContext(applicationContext)
-			sendErrorLog("didReceiveApplicationContext ACK not found applicationContext=" + 
+			sendLog("didReceiveApplicationContext ACK not found applicationContext=" + 
 				String(describing: applicationContext))
+			handleNativeContext(applicationContext)
 			return
 		}
 		guard let session = applicationContext["SESSION"] as? Int64
 		else {
-			handleNativeContext(applicationContext)
-			sendErrorLog("didReceiveApplicationContext SESSION not found applicationContext=" +
+			sendLog("didReceiveApplicationContext SESSION not found applicationContext=" +
 			String(describing: applicationContext))
+			handleNativeContext(applicationContext)
 			return
 		}
 		if (session != 0 && session != sessionID) {
