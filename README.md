@@ -3,29 +3,20 @@
 This plugin enables the addition of a companion Apple WatchKit extension to a Cordova iOS app. It provides a Cordova plugin interface and a Watchkit framework that provides iOS/watchOS app communication.
 
 The following points should be noted.
-
 * An existing Cordova iOS app can be extended to include a companion WatchKit extension by opening the app project in Xcode and adding a "Watch App for iOS App" target.
-
-* After the companion WatchKit app target has been added, **you cannot use any functions of the Cordova CLI on the project** since this will damage the project and make it unusable. All further additions or modifications to the project must be made via Xcode. Therefore, all required Cordova plugins must be installed before the WatchKit app target is added, and any changes to the HTML and Javascript code of the app (including plugins) must be applied directly to the *Staging* directory of the Xcode project.
-
 * The companion WatchKit app target must be coded in Swift, and use the WatchKit App Delegate lifecycle.
-
-* This plugin and companion Watchkit framework has been designed and tested for the latest versions of Cordova (10, Cordova iOS (6), iOS (14), watchOS (7), Xcode(12) and Swift (5). Compatibility with earlier versions of any of these components is not assured and will not be addressed.
-
+* After the companion WatchKit app target has been added, **you cannot use any functions of the Cordova CLI on the project** since this will damage the project and make it unusable. All further additions or modifications to the project must be made via Xcode. Therefore, all required Cordova plugins must be installed before the WatchKit app target is added, and any changes to the HTML and Javascript code of the app (including plugins) must be applied directly to the *Staging* directory of the Xcode project.
+* As an alternative to making all Cordova iOS additions or modifications to the project via Xcode, a base project representing only the the Cordova iOS app can be maintained, and updates to the Cordova iOS app can be applied to a separate project that contains the complete app (iOS and watchOS targets).
+* This plugin and companion Watchkit framework has been designed and tested for the latest versions of Cordova (10.0.0), Cordova iOS (6.2.0), iOS (14), watchOS (7), Xcode(12) and Swift (5). Compatibility with earlier versions of any of these components is not assured and will not be addressed.
 * This plugin includes a fully functional [test app](#watchlink-test-app) that illustrates the use of the watchLink messaging framework.
 
 #### Design objectives
 
 At minimum, this plugin allows an Apple Watch to be easily used as as a user interface device for a Cordova iOS app.
-
 * All iOS application logic can be provided via Javascript in the Cordova iOS app. No Swift code is required on the iOS side since all required communication functionality is provided through the plugin interface.
-
-* User interface logic must be coded for the Watch using Swift, with the messaging framework providing incoming and outgoing message communication with the iOS app.
-
+* User interface logic must be coded for the Watch using Swift, with the watchLink messaging framework providing incoming and outgoing message communication with the iOS app.
 * Comprehensive logging is available which enables the iOS app and the watchOS app to be monitored from the Javascript console as well as the Xcode consoles for each.
-
 * The framework Javascript and Swift code guards against error conditions that would cause an app crash and abandons the requested operation after issuing console error messages.
-
 * There are no third-party software dependencies. The plugin and WatchOS framework are completely self-contained and rely only upon established Cordova iOS and WatchOS APIs.
 
 Of course, as much logic as desired can be included in the watchOS app. It is not limited to user interface functions and any of the WatchKit APIs can be accessed. Similarly, the iOS app may contain custom Swift modules to support the operation of the Cordova iOS app.
@@ -38,36 +29,23 @@ All of the features of WCSEssion and WCSessionDelegate are supported with the ex
 
 
 ## Table of Contents
-
 * **[Installation and Xcode project setup](#installation-and-xcode-project-setup).** How to install the plugin, extend the Cordova Xcode project to include a Watch target, and commence testing via Xcode using the simulator or device hardware.
-
 * **[Watch session initialization](#Watch-session-initialization).** How the plugin signals that initialization of the Watch session is complete.
-
 * **[Session status](#session-status).** How the plugin signals the the state of the Watch session and watchOS app. 
-
 * **[watchLink message session management](#watchlink-message-session-management).** How watchLink message sessions are managed.
-
 * **[Communication methods](#communication-methods).** An overview of communication methods supported by the plugin.
-
 * **[Dictionary message passing](#dictionary-message-passing).** How messages consisting of dictionary payloads are transmitted and received.
-
 * **[Data message passing](#data-message-passing).** How messages consisting of untyped data payloads are transmitted and received.
-
 * **[User information transfers](#user-information-transfers).** How user information payloads are transmitted, received and managed.
-
 * **[Application context transfers](#application-context-transfers).** How application context payloads are transmitted, received and managed.
-
 * **[Complication data transfers](#complication-data-transfers).** How complication payloads are transmitted and managed.
-
 * **[Scheduled local notifications](#scheduled-local-notifications).** How local notifcations can be scheduled and managed.
-
 * **[Console log management](#console-log-management).** How iOS and Watch app log output can be filtered by severity level.
-
 * **[watchLink test app](#watchlink-test-app).** How to install and use the test app included with the plugin.
 
 ## Installation and Xcode project setup
 
-The plugin creates the global ```window.cordova.watchLink``` which is abbreviated as ```watchLink``` in this document.
+The plugin creates the global ```window.cordova.plugins.watchLink``` which is abbreviated as ```watchLink``` in this document.
 
 #### Latest published version on npm
 ```
@@ -111,33 +89,28 @@ class ExtensionDelegate: WatchLinkExtensionDelegate {
 The file `WatchLinkExtensionDelegate.swift` provides the framework for communication with the plugin, and the changes to `ExtensionDelegate.swift` enable the framework to process incoming messages from the plugin.
 
 The following modifications to the Xcode project are necessary after creating the WatchKit app target:
-
 * Remove the bridging header reference under build settings for the watchOS app extension (but **not** for the watchOS app).
-
 * Set the bundle version and bundle version (short) to 1.0.0 for both the watchOS app and extension.
-
 * Set the Swift Language Version to 5 under Build Settings for the iOS app (ignore the warning message about the project containing Swift Version 3 code)
-
 * Accept Xcode recommendations to update project settings.
 
 Now add the watchOS app and extension files.
+
+#### Migrating Watch target files from another Xcode project
+
+You can drag Swift files and .xcassets graphic assets from the old Xcode project target to the new project. However, project settings should be set directly in the new project, and .storyboard files should be copied to the new project using the "File/Add Files to <project name> ..." Xcode command.
 
 #### Initiate testing via Xcode
 
 Use either the Xcode simulator or iPhone and Watch devices (preferred).
 
 To launch using the Xcode simulator, select the Watch target and a Watch simulator, and run. 
-
 * The simulator will load both a Watch simulator and an iPhone simulator. 
-
 * The Xcode console will show only the Watch console (the iOS Xcode console is not available).
-
 * You can open a Web Inspector window from Safari to inspect the iOS Cordova app and view the console, which will show watchLink log messages from both the iOS app and the Watch. 
 
 To launch using iPhone and Watch devices, connect your iPhone to your Mac and run the watchOS app. Then run the iOS app. 
-
 * This will result in both Xcode consoles being available (selected from the console selector). 
-
 * You can open a Web Inspector window from Safari to inspect the iOS Cordova app and view the console, which will show watchLink log messages from both the iOS app and the Watch.
 
 #### iOS platform and plugin maintenance
@@ -145,7 +118,6 @@ To launch using iPhone and Watch devices, connect your iPhone to your Mac and ru
 As an alternative to making all Cordova iOS additions or modifications to the project via Xcode, a base project representing only the the Cordova iOS app can be maintained, and updates to the Cordova iOS app can be applied to a separate project that contains the complete app (iOS and watchOS targets).
 
 The plugin includes two shell scripts that will facilitate this. These scripts should be run from a terminal window with the current directory set to the base project directory.
-
 * The script ```clone.sh``` will create a folder ```watchtarget``` and copy the iOS platform code to it.
 * The script ```update.sh``` will perform ```cordova prepare ios``` and update the iOS platform code in the ```watchtarget``` directory.
 
@@ -414,17 +386,11 @@ watchReset(_ f: (() -> Void))
 ## Communication methods
 
 There are six methods of communication provided:
-
 * **[Dictionary message passing](#dictionary-message-passing):** messages may be exchanged containing a dictionary of values. Messages will be queued until the companion app is reachable.
-
 * **[Data message passing](#data-message-passing):** messages may be exchanged containing an untyped data object. Messages will be queued until the companion app is reachable.
-
 * **[User information transfers](#user-information-transfers):** a dictionary of values representing user information may be transmitted in either direction. These transfers can occur in background (when the companion app is available but not reachable).
-
 * **[Application context transfers](#application-context-transfers):** a dictionary of values representing application context may be transmitted in either direction. These transfers can occur in background (when the companion app is available but not reachable).
-
 * **[Complication data transfers](#complication-data-transfers):** a dictionary of values representing complication user information may be transmitted from the iOS app to the watchOS app. These transfers can occur in background (when the watchOS app is not reachable, i.e. the watchOS app is not in foreground).
-
 * **[Scheduled local notifications](#scheduled-local-notifications):** you can schedule a local notification to be presented at a specific time. The notification will be shown on the iOS device or Watch, depending on which one is active.
 
 #### Dictionary format
@@ -545,15 +511,10 @@ watchLink.bindMessageHandler(expr, handler)
 //			matching handlers
 ```
 To handle an incoming message, the message type is extracted and each handler with a matching expression is invoked with the message type and message body as parameters. The order of invocation is the order in which the handlers were bound.
-
 * Processing continues until all matching expressions have been checked, or until a handler returns false to halt processing.
-
 * The expression can be a string (requires an exact match) or a regular expression.
-
 * Supplying null for the handler will unbind a previously bound handler.
-
 * Supplying a handler for an existing match expression will overwrite the existing handler for that expression.
-
 * Supplying null for the match expression will set the default handler, unless it is null also in which case the default handler will be unbound.
 
 #### Message receipt (watchOS)
@@ -635,7 +596,6 @@ watchLink.bindDataMessageHandler(handler)
 //	handler = function(msgData)
 ```
 * Supplying null for the handler will unbind a previously bound handler.
-
 * Binding a handler will overwrite any existing handler (only one handler can be invoked for an incoming data message).
 
 #### Data message receipt (watchOS)
@@ -940,7 +900,6 @@ watchLink.sendComplicationInfo(complicationInfo);
 //		is unavailable
 ```
 watchLink.sendComplicationInfo adds the key ```TIMESTAMP``` to the complicationInfo object which contains a unique timestamp representing the transfer. Note that if complicationInfo contains an existing key ```TIMESTAMP``` it will be overwritten with the timestamp. This value can be used to query the status of the transfer, and cancel the tranfer if desired. The value of this key can be retrived from the supplied complicationInfo object immedately upon return from the function invocation.
-
 **Note:** the complicationInfo sent to the Swift layer is a clone of the object submitted to the sendComplicationInfo function.
 
 #### Complication data transfer status and flushing (iOS)
@@ -1033,15 +992,10 @@ Local notifications can be scheduled by the iOS app and will be displayed on the
 | Background/off, screen off        | Background     | iOS banner/watchOS alert       |
 
 The following notification types may be invoked:
-
 * **iOS delegate:** Normally, this type of notification will not be shown because the iOS app is in the foreground. However, a notification delegate action can be specified which is invoked when the notification arises. As well, the delegated notifications can be set to be displayed (independent of whether a notification delegate action has been set).
-
 * **iOS alert:** This type of notification is shown on the screen and in the notification center, with optional accompanying alert sound.
-
 * **iOS banner:** This type of notification is shown in the notification center. There is no accompanying alert sound.
-
 * **watchOS delegate:** Normally, this type of notification will not be shown because the watchOS app is in the foreground. However, a notification delegate action can be specified which is invoked when the notification arises. As well, the delegated notifications can be set to be displayed (independent of whether a notification delegate action has been set).
-
 * **watchOS alert:** This type of notification is shown on the Watch face with the short look and long look.
 
 #### Request notification permission
@@ -1189,13 +1143,9 @@ The plugin logging functions enable logs from the Swift layers of the iOS app an
 #### Log levels
 
 There are four levels of log display:
-
 * All logs displayed (level 3 or "all")
-
 * Only application and error logs displayed (level 2 or "app")
-
 * Only error logs displayed (level 1 or "error")
-
 * No logs displayed (level 0 or "none")
 
 The level of log display can be controlled from the ```config.xml``` file (defaulting to 3 if unspecified) as well as dynamically from the iOS app.
@@ -1308,27 +1258,16 @@ To run the app, open the ```TestWatchLink.xcodeproj``` Xcode file. Set the *Team
 
 #### Test app iPhone screen
 The iPhone screen provides buttons to exercise the following communication functions:
-
 * Send a dictionary message to the Watch
-
 * Send a data message to the watch
-
 * Send a user information update to the watch
-
 * Send an application context update to the watch
-
 * Enable or disble acknowledgement for the above functions
-
 * Schedule a local notification
-
 * Cancel a scheduled notification
-
 * Cancel all scheduled notification
-
 * List pending notifications
-
 * Initiate a message session reset
-
 * Clear the console
 
 The area below the buttons is a console where the test app posts results of communication actions and received communications.
@@ -1338,13 +1277,9 @@ The area below the buttons is a console where the test app posts results of comm
 <img src="Docs/watch.png" align="right" width="250">
 
 The Watch screen provides a console where the test app posts results of communication actions and received communications. There are additioanl screens that provide buttons to exercise the following communication functions:
-
 * Send a dictionary message to the Watch
-
 * Send a data message to the watch
-
 * Send a user information update to the watch
-
 * Send an application context update to the watch
 
 Acknowledgement can be enabled or disbled acknowledgement for each of functions from their respective pages.
