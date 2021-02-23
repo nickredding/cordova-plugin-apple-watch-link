@@ -1269,7 +1269,7 @@ func watchErrorLog(_ msg: String)
 
 The plugin includes a fully functional test app that illustrates the use of the watchLink messaging framework.
 
-To run the app, open the ```TestWatchLink.xcodeproj``` Xcode file. Set the *Team* in each of the targets to your team identifier. The app is now ready to run.
+To run the app, copy and decompress the file ```platforms.zip``` and open the ```platforms/ios/TestWatchLink.xcodeproj``` Xcode file. Set the *Team* in each of the targets to your team identifier. The app is now ready to run.
 
 <img src="Docs/iphone-screen.png" align="right" width="250">
 
