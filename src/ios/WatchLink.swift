@@ -841,17 +841,17 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 			case "WATCHAPPACTIVE":
 				// watch app active
 				applicationState = "ACTIVE"
-                notifyReachability()
+                //notifyReachability()
 				notifyApplicationState()
 			case "WATCHAPPINACTIVE":
 				// watch app inactive
 				applicationState = "INACTIVE"
-                notifyReachability()
+                //notifyReachability()
 				notifyApplicationState()
 			case "WATCHAPPBACKGROUND":
 				// watch app background
 				applicationState = "BACKGROUND"
-                notifyReachability()
+                //notifyReachability()
 				notifyApplicationState()
 			case "WATCHLOG":
 				// it's a log from the watch
