@@ -127,7 +127,7 @@ $./clone.sh
 $
 ```
 This creates the ```watchtarget``` directory structure as illustrated below.
-<img src="Docs/project-create.png" align="center" width="800">
+<img src="Docs/project-create.png" align="center" width="600">
 
 The watchOS target development can take place in the ```watchtarget``` iOS platform directory. After the Watch targets have been created, the file ```WatchLinkExtensionDelegate.swift``` should be added to the Extension and the standard file `ExtensionDelegate.swift` modified as specified above.
 
@@ -143,7 +143,7 @@ $.update.sh AppProject
 $
 ```
 This updates the ```watchtarget``` directory structure as illustrated below.
-<img src="Docs/project-update.png" align="center" width="800">
+<img src="Docs/project-update.png" align="center" width="600">
 ## Watch session initialization
 
 The Watch session at the Swift level might not have completed initialization by the time the plugin completes initialization. Therefore, the iOS and watchOS apps must ensure the Watch session is ready before attempting to query its status or send messages to the counterpart.
