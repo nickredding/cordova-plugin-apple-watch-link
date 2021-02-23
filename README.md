@@ -532,7 +532,7 @@ Message processing in the watchOS app is handled in the same way as on the iOS a
 
 #### Nonconforming dictionary message handling
 
-It is possible to use the ```WCSession``` interface directly for sending messages to the counterpart. This will bypass the watchLink framework and these messages will be detected as nonconforming and delivered to the default message handlers (if configured).
+It is possible to use the ```WCSession``` interface directly for sending messages to the counterpart. This will bypass the watchLink framework and these messages will be detected as nonconforming and delivered to the default message handler (if configured).
 
 Note that if you access the ```WCSession``` interface directly your code is responsible for error handling and ensuring that he counterpart app is reachable before sending messages.
 
@@ -609,7 +609,7 @@ bindDataMessageHandler(handler: @escaping ((Data) -> Bool))
 ```
 #### Nonconforming dictionary message handling
 
-It is possible to use the ```WCSession``` interface directly for sending data messages to the counterpart. This will bypass the watchLink framework and these messages will be detected as nonconforming and delivered to the data message handlers (if configured).
+It is possible to use the ```WCSession``` interface directly for sending data messages to the counterpart. This will bypass the watchLink framework and these messages will be detected as nonconforming and delivered to the data message handler (if configured).
 
 Note that if you access the ```WCSession``` interface directly your code is responsible for error handling and ensuring that he counterpart app is reachable before sending messages.
 
@@ -778,7 +778,7 @@ bindUserInfoHandler(handler: @escaping (([String: Any]) -> Void))
 ```
 #### Nonconforming user information transfer handling
 
-It is possible to use the ```WCSession``` interface directly for transfering user information to the counterpart. This will bypass the watchLink framework and these transfers will be detected as nonconforming and delivered to the user information handlers (if configured).
+It is possible to use the ```WCSession``` interface directly for transfering user information to the counterpart. This will bypass the watchLink framework and these transfers will be detected as nonconforming and delivered to the user information handler (if configured).
 
 Note that if you access the ```WCSession``` interface directly your code is responsible for error handling and ensuring that he counterpart app is available before sending messages.
 
@@ -900,7 +900,7 @@ bindContextHandler(handler: @escaping (([String: Any]) -> Void))
 ```
 #### Nonconforming application context transfer handling
 
-It is possible to use the ```WCSession``` interface directly for transfering application contexts to the counterpart. This will bypass the watchLink framework and these transfers will be detected as nonconforming and delivered to the user information handlers (if configured).
+It is possible to use the ```WCSession``` interface directly for transfering application contexts to the counterpart. This will bypass the watchLink framework and these transfers will be detected as nonconforming and delivered to the user information handler (if configured).
 
 Note that if you access the ```WCSession``` interface directly your code is responsible for error handling and ensuring that he counterpart app is available before sending messages.
 ## Complication data transfers
