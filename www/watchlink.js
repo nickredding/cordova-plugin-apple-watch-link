@@ -13,8 +13,8 @@
  KIND, either express or implied.  See the License for the
  specific language governing permissions and limitations
  under the License.
- */
- 
+*/
+
 /* global cordova */
     
 /*
@@ -437,8 +437,10 @@ function watchLink() {
                 }
             }, 
             function(msg) {
+            if (!/^sessionreset/.test(msg)) {
                 _watchLink.errorLog('Session RESET failed (will retry)--' + msg);
                 _watchLink.resetSession();
+            }
             }, 
             'WatchLink', 'resetSession', [reason]);
     };

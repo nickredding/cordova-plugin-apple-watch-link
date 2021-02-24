@@ -13,8 +13,8 @@
  KIND, either express or implied.  See the License for the
  specific language governing permissions and limitations
  under the License.
- */
- 
+*/
+
 //
 // WatchLink.swift
 //
@@ -328,7 +328,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 
 	func sessionWatchStateDidChange(_ session: WCSession) {
 		sendLog("WatchLink session state change")
-		notifyAvailability()
+        notifyAvailability()
         notifyApplicationState()
 	}
 
@@ -586,10 +586,11 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		if (!queue.msgQueue.isEmpty) {
 			let index = queue.getQueueItem(timestamp)
 			if (index != -1) {
-				if (WCError.Code.notReachable.rawValue as Int == (response as NSError).code) {
+				if (WCError.Code.notReachable.rawValue as Int == (response as NSError).code ||
+                        String(describing: response).matches("WCErrorDomain Code=7007")) {
 					sendErrorLog("handleMessageQueueError " + 
 						"\(queue.msgQueue[index].timestamp) watch not reachable after " +
-						"transmission, msgType = " + queue.msgQueue[index].msgType + ":")
+						"transmission (will retry), msgType = " + queue.msgQueue[index].msgType + ":")
 					queue.processing = false
 				}
 				else {
@@ -858,17 +859,14 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 			case "WATCHAPPACTIVE":
 				// watch app active
 				applicationState = "ACTIVE"
-                //notifyReachability()
 				notifyApplicationState()
 			case "WATCHAPPINACTIVE":
 				// watch app inactive
 				applicationState = "INACTIVE"
-                //notifyReachability()
 				notifyApplicationState()
 			case "WATCHAPPBACKGROUND":
 				// watch app background
 				applicationState = "BACKGROUND"
-                //notifyReachability()
 				notifyApplicationState()
 			case "WATCHLOG":
 				// it's a log from the watch
@@ -972,7 +970,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
             sendLog("Received message " + String(describing: message))
         }
         if(!msgType.matches(watchSystemMessages)) {
-            if (session < sessionID) {
+            if (session > 0 && session < sessionID) {
                 sendLog("didReceiveMessage SESSION obsolete message=" +
                     String(describing: message))
                 return
@@ -1019,7 +1017,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
             sendLog("Received message " + String(describing: message))
         }
         if(!msgType.matches(watchSystemMessages)) {
-            if (session < sessionID) {
+            if (session > 0 && session < sessionID) {
                 sendLog("didReceiveMessage SESSION obsolete message=" +
                     String(describing: message))
                 return
@@ -1960,9 +1958,3 @@ extension String {
 			range: nil, locale: nil) != nil
 	}
 }
-
-
-
-
-
-

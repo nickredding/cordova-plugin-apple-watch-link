@@ -1,4 +1,3 @@
-
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -14,9 +13,9 @@
  KIND, either express or implied.  See the License for the
  specific language governing permissions and limitations
  under the License.
- */
- 
- /*
+*/
+
+/*
  
 This module provides the WatchLink connectivity class for the watch extension.
 
@@ -73,6 +72,19 @@ var watchResetFunc: (() -> Void)!
 
 func watchReset(_ f: @escaping (() -> Void)) {
     watchResetFunc = f
+}
+
+var phoneAvailable = false
+var phoneReachable = false
+
+var availabilityChanged: ((Bool) -> Void)!
+var reachabilityChanged: ((Bool) -> Void)!
+
+func bindAvailabilityHandler(_ handler: @escaping ((Bool) -> Void)) {
+    availabilityChanged = handler
+}
+func bindReachabilityHandler(_ handler: @escaping ((Bool) -> Void)) {
+    reachabilityChanged = handler
 }
 
 func nullHandler(_ msg: String) {}
@@ -392,9 +404,10 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 		if (!queue.msgQueue.isEmpty) {
 			let index = queue.getQueueItem(timestamp)
 			if (index != -1) {
-				if (WCError.Code.notReachable.rawValue as Int == (response as NSError).code) {
+                if (WCError.Code.notReachable.rawValue as Int == (response as NSError).code ||
+                        String(describing: response).matches("WCErrorDomain Code=7007")) {
 					printErrorLog("handleMessageQueueError \(queue.msgQueue[index].timestamp)" +
-						" watch not reachable after transmission, msgType = " + 
+						" watch not reachable after transmission (will retry), msgType = " + 
 						queue.msgQueue[index].msgType + ":")
 					queue.processing = false
 				}
@@ -614,6 +627,18 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 		_ = addMessage(msgType: "WATCHAPPBACKGROUND", msgBody: [:], 
 			ack: false, hostMessageQueue)
 	}
+    
+    func sessionCompanionAppInstalledDidChange(_ session: WCSession) {
+        if (availabilityChanged != nil) {
+            availabilityChanged(session.isCompanionAppInstalled)
+        }
+    }
+
+    func sessionReachabilityDidChange(_ session: WCSession) {
+        if (reachabilityChanged != nil) {
+            reachabilityChanged(session.isReachable)
+        }
+    }
 
 	func handle(_ backgroundTasks: Set<WKRefreshBackgroundTask>) {
 		// Sent when the system needs to launch the application in the background to 
@@ -704,8 +729,8 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 			return
 		}
         if (session > sessionID) {
+            printLog("Session RESET, msgType=" + msgType + " old session=" + String(sessionID) + " new session=" + String(session))
             handleReset(session)
-            printLog("Session RESET, msgType=" + msgType)
             if (watchResetFunc != nil) {
                 watchResetFunc()
             }
@@ -795,13 +820,13 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 		replyHandler: @escaping ([String : Any]) -> Void) 
 	{
 		replyHandler(message)
-		handleMessage(message: message)
         printLog("Received message " + String(describing: message))
+		handleMessage(message: message)
 	}
 	
 	func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
-		handleMessage(message: message)
         printLog("Received message " + String(describing: message))
+		handleMessage(message: message)
 	}
 	
 	func session(_ session: WCSession, 
@@ -997,5 +1022,3 @@ extension String {
 		return self.range(of: regex, options: .regularExpression, range: nil, locale: nil) != nil
 	}
 }
-
-

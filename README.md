@@ -357,6 +357,12 @@ let watchSession = WCSession.default
 watchSession.isReachable // is the iOS app reachable
 	...
 ```
+You can bind handlers to be notified of changes in companion app availability and reachability.
+```
+func bindAvailabilityHandler(_ handler: @escaping ((Bool) -> Void)) 
+
+func bindReachabilityHandler(_ handler: @escaping ((Bool) -> Void))
+```
 See [WCSession class](https://developer.apple.com/documentation/watchconnectivity/wcsession) for details.
 
 ## watchLink message session management
