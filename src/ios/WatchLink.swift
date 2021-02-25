@@ -905,30 +905,30 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		}
 	}
 	
-	func handleNativeMessage(_ message: [String : Any],
+	func handleDirectMessage(_ message: [String : Any],
 		_ replyHandler: @escaping ([String : Any]) -> Void) 
 	{
 		replyHandler(message)
 		if (receivedMessageCallbackId != nil) {
 			let result = CDVPluginResult(status: CDVCommandStatus_OK, 
-				messageAs: ["msgType": "", "msg": message])
+				messageAs: ["msgType": "WCSESSION", "msg": message])
 			result!.setKeepCallbackAs(true)
 			self.commandDelegate.send(result, callbackId: receivedMessageCallbackId)
 		}
 		else {
-			sendLog("didReceiveNativeMessage not bound")
+			sendErrorLog("didReceiveDirectMessage not bound")
 		}
 	}
 	
-    func handleNativeMessageNoAck(_ message: [String : Any]) {
+    func handleDirectMessageNoAck(_ message: [String : Any]) {
 		if (receivedMessageCallbackId != nil) {
 			let result = CDVPluginResult(status: CDVCommandStatus_OK, 
-				messageAs: ["msgType": "", "msg": message])
+				messageAs: ["msgType": "WCSESSION", "msg": message])
 			result!.setKeepCallbackAs(true)
 			self.commandDelegate.send(result, callbackId: receivedMessageCallbackId)
 		}
 		else {
-			sendLog("didReceiveNativeMessage not bound")
+			sendErrorLog("didReceiveDirectMessage not bound")
 		}
 	}
     
@@ -941,28 +941,28 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		else {
 			sendLog("didReceiveMessage msgType not found message=" + 
 				String(describing: message))
-			handleNativeMessage(message, replyHandler)
+			handleDirectMessage(message, replyHandler)
 			return
 		}
 		guard let msgBody = message["msgBody"]
 		else {
 			sendLog("didReceiveMessage msgBody not found message=" + 
 				String(describing: message))
-			handleNativeMessage(message, replyHandler)
+			handleDirectMessage(message, replyHandler)
 			return
 		}
 		guard let timestamp = message["timestamp"] as? Int64
 		else {
 			sendLog("didReceiveMessage timestamp not found message=" + 
 				String(describing: message))
-			handleNativeMessage(message, replyHandler)
+			handleDirectMessage(message, replyHandler)
 			return
 		}
 		guard let session = message["session"] as? Int64
 		else {
 			sendLog("didReceiveMessage session not found message=" + 
 				String(describing: message))
-			handleNativeMessage(message, replyHandler)
+			handleDirectMessage(message, replyHandler)
 			return
 		}
 		replyHandler(["timestamp" : timestamp])
@@ -989,28 +989,28 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		else {
 			sendLog("didReceiveMessage msgType not found message=" + 
 				String(describing: message))
-			handleNativeMessageNoAck(message)
+			handleDirectMessageNoAck(message)
 			return
 		}
 		guard let msgBody = message["msgBody"]
 		else {
 			sendLog("didReceiveMessage msgBody not found message=" + 
 				String(describing: message))
-			handleNativeMessageNoAck(message)
+			handleDirectMessageNoAck(message)
 			return
 		}
 		guard let session = message["session"] as? Int64
 		else {
 			sendLog("didReceiveMessage SESSION not found message=" + 
 				String(describing: message))
-			handleNativeMessageNoAck(message)
+			handleDirectMessageNoAck(message)
 			return
 		}
         guard let timestamp = message["timestamp"] as? Int64
         else {
             sendLog("didReceiveMessage timestamp not found message=" +
                 String(describing: message))
-            handleNativeMessageNoAck(message)
+            handleDirectMessageNoAck(message)
             return
         }
         if (!msgType.matches("^WATCH.*LOG$")) {
@@ -1040,10 +1040,10 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 			let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAsArrayBuffer: message)
 			result!.setKeepCallbackAs(true)
 			self.commandDelegate.send(result, callbackId: receivedDataMessageCallbackId)
-			sendLog("didReceiveNativeDataMessage")
+			sendLog("didReceiveDirectDataMessage")
 		}
 		else {
-			sendLog("didReceiveNativeDataMessage handler not bound")
+			sendErrorLog("didReceiveDirectDataMessage handler not bound")
 		}
 	}
 	
@@ -1052,10 +1052,10 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 			let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAsArrayBuffer: message)
 			result!.setKeepCallbackAs(true)
 			self.commandDelegate.send(result, callbackId: receivedDataMessageCallbackId)
-			sendLog("didReceiveNativeDataMessageNoAck")
+			sendLog("didReceiveDirectDataMessageNoAck")
 		}
 		else {
-			sendLog("didReceiveNativeDataMessageNoAck handler not bound")
+            sendErrorLog("didReceiveDirectDataMessage handler not bound")
 		}
 	}
 
@@ -1135,15 +1135,14 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		self.commandDelegate.send(result, callbackId: receivedUserInfoCallbackId)
 	}
 	
-	private func handleNativeUserInfo(_ userInfo: [String: Any]) {
+	private func handleDirectUserInfo(_ userInfo: [String: Any]) {
 		if (receivedUserInfoCallbackId != nil) {
 			let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: userInfo)
 			result!.setKeepCallbackAs(true)
 			self.commandDelegate.send(result, callbackId: receivedUserInfoCallbackId)
-			sendLog("handleNativeUserInfo callback executed");
 		}
 		else {
-			sendErrorLog("handleNativeUserInfo not bound: userInfo = " + 
+			sendErrorLog("handleDirectUserInfo not bound: userInfo = " +
 				String(describing: userInfo))
 		}
 	}
@@ -1154,21 +1153,21 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		else {
 			sendLog("didReceiveUserInfo TIMESTAMP not found userInfo=" + 
 				String(describing: userInfo))
-			handleNativeUserInfo(userInfo)
+			handleDirectUserInfo(userInfo)
 			return
 		}
 		guard let ack = userInfo["ACK"] as? Bool
 		else {
 			sendLog("didReceiveUserInfo ACK not found userInfo=" + 
 				String(describing: userInfo))
-			handleNativeUserInfo(userInfo)
+			handleDirectUserInfo(userInfo)
 			return
 		}
 		guard let session = userInfo["SESSION"] as? Int64
 		else {
 			sendLog("didReceiveUserInfo SESSION not found userInfo=" + 
 				String(describing: userInfo))
-			handleNativeUserInfo(userInfo)
+			handleDirectUserInfo(userInfo)
 			return
 		}
 		if (session != 0 && session != sessionID) {
@@ -1286,15 +1285,14 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		self.commandDelegate.send(result, callbackId: receivedContextCallbackId)
 	}
 	
-	private func handleNativeContext(_ context: [String: Any]) {
+	private func handleDirectContext(_ context: [String: Any]) {
 		if (receivedContextCallbackId != nil) {
 			let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: context)
 			result!.setKeepCallbackAs(true)
 			self.commandDelegate.send(result, callbackId: receivedContextCallbackId)
-			sendLog("handleNativeContext callback executed");
 		}
 		else {
-			sendErrorLog("handleNativeContext not bound: userInfo = " + 
+			sendErrorLog("handleDirectContext not bound: userInfo = " +
 				String(describing: context))
 		}
 	}
@@ -1307,21 +1305,21 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		else {
 			sendLog("didReceiveApplicationContext TIMESTAMP not found " +
 				"applicationContext=" + String(describing: applicationContext))
-			handleNativeContext(applicationContext)
+			handleDirectContext(applicationContext)
 			return
 		}
 		guard let ack = applicationContext["ACK"] as? Bool
 		else {
 			sendLog("didReceiveApplicationContext ACK not found applicationContext=" + 
 				String(describing: applicationContext))
-			handleNativeContext(applicationContext)
+			handleDirectContext(applicationContext)
 			return
 		}
 		guard let session = applicationContext["SESSION"] as? Int64
 		else {
 			sendLog("didReceiveApplicationContext SESSION not found applicationContext=" +
 			String(describing: applicationContext))
-			handleNativeContext(applicationContext)
+			handleDirectContext(applicationContext)
 			return
 		}
 		if (session != 0 && session != sessionID) {
@@ -1890,6 +1888,86 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 			addMessage(msgType: "SETPRINTLOGLEVEL", msg: watchPrintLogLevel, timestamp: newTimestamp(), watchMessageQueue)
 		}
 	}
+
+    var lastWCSessionCommandCallback: String!
+    
+    @objc(wcSessionCommand:)
+    func wcSessionCommand(command: CDVInvokedUrlCommand) {
+        let session = WCSession.default
+        guard let op = command.argument(at: 0) as? String
+        else {
+            sendErrorLog("wcSessionCommand: op data error")
+            return
+        }
+        // avoid memory leak from callback hanging around
+        if (lastWCSessionCommandCallback != nil) {
+            cancelCallback(lastWCSessionCommandCallback)
+            lastWCSessionCommandCallback = nil
+        }
+        switch(op) {
+        case "sendMessage":
+            guard let payload = command.argument(at: 1) as? [String: Any]
+            else {
+                sendErrorLog("wcSessionCommand: payload data error")
+                return
+            }
+            lastWCSessionCommandCallback = command.callbackId
+            session.sendMessage(payload, replyHandler: nil,
+                        errorHandler:
+                            { (response: Error) in
+                                self.sendErrorLog("wcSessionCommand error " + String(describing: response))
+                                if (self.lastWCSessionCommandCallback != nil) {
+                                    let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "wcSessionCommand error " + String(describing: response))
+                                    self.commandDelegate.send(result, callbackId: self.lastWCSessionCommandCallback)
+                                    self.lastWCSessionCommandCallback = nil
+                                }
+                            })
+        case "sendDataMessage":
+            guard let payload = command.argument(at: 1) as? Data
+            else {
+                sendErrorLog("wcSessionCommand: payload data error")
+                return
+            }
+            lastWCSessionCommandCallback = command.callbackId
+            session.sendMessageData(payload, replyHandler: nil,
+                        errorHandler:
+                            { (response: Error) in
+                                self.sendErrorLog("wcSessionCommand error " + String(describing: response))
+                                if (self.lastWCSessionCommandCallback != nil) {
+                                    let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "wcSessionCommand error " + String(describing: response))
+                                    self.commandDelegate.send(result, callbackId: self.lastWCSessionCommandCallback)
+                                    self.lastWCSessionCommandCallback = nil
+                                }
+                            })
+        case "updateUserInfo":
+            guard let payload = command.argument(at: 1) as? [String: Any]
+            else {
+                sendErrorLog("wcSessionCommand: payload data error")
+                return
+            }
+            session.transferUserInfo(payload)
+        case "updateContext":
+            guard let payload = command.argument(at: 1) as? [String: Any]
+            else {
+                sendErrorLog("wcSessionCommand: payload data error")
+                return
+            }
+            lastWCSessionCommandCallback = command.callbackId
+            do  {
+                try session.updateApplicationContext(payload)
+            }
+            catch {
+                sendErrorLog("wcSessionCommand: updateContext error \(error)")
+                if (self.lastWCSessionCommandCallback != nil) {
+                    let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "wcSessionCommand: updateContext error \(error)")
+                    self.commandDelegate.send(result, callbackId: self.lastWCSessionCommandCallback)
+                    self.lastWCSessionCommandCallback = nil
+                }
+            }
+        default:
+            sendErrorLog("wcSessionCommand: op data error " + op)
+        }
+    }
 }
 
 // These funcs can be called to send a log to the cordova console from iOS swift
@@ -1958,3 +2036,9 @@ extension String {
 			range: nil, locale: nil) != nil
 	}
 }
+
+
+
+
+
+

@@ -55,7 +55,8 @@ let reservedMsgTypes = "^(" +
 	"UPDATEDUSERINFO" + "|" +
 	"WATCHLOG" + "|" +
 	"WATCHERRORLOG" + "|" +
-	"WATCHAPPLOG" + ")$"
+	"WATCHAPPLOG" +
+    "WCSESSION" + ")$"
 
 var watchInitialized = false
 
@@ -713,14 +714,14 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 		else {
 			printLog("didReceiveMessage SESSION not found message=" + 
 				String(describing: message))
-			defaultAppMessageHandler("", message)
+			defaultAppMessageHandler("WCSESSION", message)
 			return
 		}
         guard let msgType = message["msgType"] as? String
         else {
             printLog("didReceiveMessage msgType not found message=" +
                 String(describing: message))
-			defaultAppMessageHandler("", message)
+			defaultAppMessageHandler("WCSESSION", message)
             return
         }
 		if (session < sessionID) {
@@ -739,7 +740,7 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 		else {
 			printLog("didReceiveMessage msgBody not found message=" + 
 				String(describing: message))
-			defaultAppMessageHandler("", message)
+			defaultAppMessageHandler("WCSESSION", message)
 			return
 		}
 		switch msgType {
@@ -1022,3 +1023,5 @@ extension String {
 		return self.range(of: regex, options: .regularExpression, range: nil, locale: nil) != nil
 	}
 }
+
+
