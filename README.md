@@ -1277,7 +1277,7 @@ The plugin includes a fully functional test app that illustrates the use of the 
 
 To run the app, copy and decompress the file ```platforms.zip``` and open the ```platforms/ios/TestWatchLink.xcodeproj``` Xcode file. Set the *Team* in each of the targets to your team identifier. The app is now ready to run.
 
-<img src="Docs/iphone-screen.png" align="right" width="250">
+<img src="Docs/iphone-screen.1.0.1.png" align="right" width="250">
 
 #### Test app iPhone screen
 The iPhone screen provides buttons to exercise the following communication functions:
@@ -1307,7 +1307,7 @@ Acknowledgement can be enabled or disbled acknowledgement for each of functions 
 
 The Watch screen shots show the console screen reporting the receipt of the iPhone message and the message screen showing the transmission of an acknowledged message to the iPhone.
 
-<img src="Docs/watch-screens.png" align="center" width="800">
+<img src="Docs/watch-screens.1.0.1.png" align="center" width="800">
 
 #### Testing via Javascript
 
