@@ -1307,7 +1307,7 @@ Acknowledgement can be enabled or disbled acknowledgement for each of functions 
 
 The Watch screen shots show the console screen reporting the receipt of the iPhone message and the message screen showing the transmission of an acknowledged message to the iPhone.
 
-<img src="Docs/watch-screens.1.0.1.png" align="center" width="800">
+<img src="Docs/watch-screen.1.0.1.png" align="center" width="800">
 
 #### Testing via Javascript
 
