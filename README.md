@@ -544,7 +544,7 @@ Note that if you access the ```WCSession``` interface directly your code is resp
 
 Dictionary messsages can be sent directly (bypassing the watchLink framework) from the iOS app using ```watchLink.wcSessionCommand```. The Watch app must be reachable (otherwise the error callback will be invoked).
 ```
-watchLink.wcSessionCommand = function('sendMessage', payload, error)
+watchLink.wcSessionCommand('sendMessage', payload, error)
 //	payload = <property-list-dictionary>
 //	error = function(msg)
 //		Invoked in the case of an error
@@ -628,7 +628,7 @@ Note that if you access the ```WCSession``` interface directly your code is resp
 
 Dictionary messsages can be sent directly (bypassing the watchLink framework) from the iOS app using ```watchLink.wcSessionCommand```. The Watch app must be reachable (otherwise the error callback will be invoked).
 ```
-watchLink.wcSessionCommand = function('sendDataMessage', payload, error)
+watchLink.wcSessionCommand('sendDataMessage', payload, error)
 //	payload = <ArrayBuffer>
 //	error = function(msg)
 //		Invoked in the case of an error
@@ -804,7 +804,7 @@ Note that if you access the ```WCSession``` interface directly your code is resp
 
 User information transfers can be sent directly (bypassing the watchLink framework) from the iOS app using ```watchLink.wcSessionCommand```. The Watch app must be reachable. There is no provision for an error callback.
 ```
-watchLink.wcSessionCommand = function('updateUserInfo', payload)
+watchLink.wcSessionCommand('updateUserInfo', payload)
 //	payload = <property-list-dictionary>
 ```
 ## Application context transfers
@@ -931,7 +931,7 @@ Note that if you access the ```WCSession``` interface directly your code is resp
 
 Dictionary messsages can be sent directly (bypassing the watchLink framework) from the iOS app using ```watchLink.wcSessionCommand```. The Watch app must be reachable (otherwise the error callback will be invoked).
 ```
-watchLink.wcSessionCommand = function('updateContext', payload, error)
+watchLink.wcSessionCommand('updateContext', payload, error)
 //	payload = <property-list-dictionary>
 //	error = function(msg)
 //		Invoked in the case of an error
