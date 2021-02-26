@@ -3,3 +3,8 @@
 #### 1.0.0 (February 23, 2021)
 
 * Initial release.
+
+#### 1.0.1 (February 26, 2021)
+
+* Bug fixes.
+* Add direct messaging to test app.
