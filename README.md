@@ -538,7 +538,7 @@ Message processing in the watchOS app is handled in the same way as on the iOS a
 
 #### Direct dictionary message handling
 
-It is possible to use the ```WCSession``` interface directly for sending messages to the counterpart. This will bypass the watchLink framework and these messages will be detected as direct and delivered to the default message handler (if configured).
+It is possible to use the ```WCSession``` interface directly for sending messages to the counterpart. This will bypass the watchLink framework and these messages will be detected as direct and delivered to the default message handler (if configured) with ```msgType = "WCSESSION"```.
 
 Note that if you access the ```WCSession``` interface directly your code is responsible for error handling and ensuring that the counterpart app is reachable before sending messages.
 
