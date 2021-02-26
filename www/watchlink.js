@@ -1667,6 +1667,25 @@ function watchLink() {
         cordova.exec(success, error, 'WatchLink', 'queryComplicationQuota', []);
     };
     
+    // Direct communication
+    
+    _watchLink.wcSessionCommand = function(command, payload, error) {
+        if (typeof command !== 'string' || !/^(sendMessage|sendDataMessage|updateUserInfo|updateContext)$/.test(command)) {
+            _watchLink.errorLog('wcSessionCommand illegal command: ' + JSON.stringify(command));
+            return;
+        }
+        if (payload == null | typeof payload !== 'object') {
+            _watchLink.errorLog('wcSessionCommand illegal payload: ' + JSON.stringify(command));
+            return;
+        }
+        if (command === 'UpdateUserInfo') {
+            cordova.exec(null, null, 'WatchLink', 'wcSessionCommand', [command, payload]);
+        }
+        else {
+            cordova.exec(null, error, 'WatchLink', 'wcSessionCommand', [command, payload]);
+        }
+    };
+    
     // Scheduled local notifications
     
     /* 
@@ -2329,23 +2348,6 @@ function watchLink() {
             }
         }
     }
-    
-    this.wcSessionCommand = function(command, payload, error) {
-        if (typeof command !== 'string' || !/^(sendMessage|sendDataMessage|updateUserInfo|updateContext)$/.test(command)) {
-            _watchLink.errorLog('wcSessionCommand illegal command: ' + JSON.stringify(command));
-            return;
-        }
-        if (payload == null | typeof payload !== 'object') {
-            _watchLink.errorLog('wcSessionCommand illegal payload: ' + JSON.stringify(command));
-            return;
-        }
-        if (command === 'UpdateUserInfo') {
-            cordova.exec(null, null, 'WatchLink', 'wcSessionCommand', [command, payload]);
-        }
-        else {
-            cordova.exec(null, error, 'WatchLink', 'wcSessionCommand', [command, payload]);
-        }
-    };
     
     function startLog() {
         _watchLink.log('STARTING logs');

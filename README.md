@@ -536,12 +536,19 @@ bindDefaultMessageHandler(handler: @escaping ((String, [String: Any]) -> Void))
 ```
 Message processing in the watchOS app is handled in the same way as on the iOS app.
 
-#### Nonconforming dictionary message handling
+#### Direct dictionary message handling
 
-It is possible to use the ```WCSession``` interface directly for sending messages to the counterpart. This will bypass the watchLink framework and these messages will be detected as nonconforming and delivered to the default message handler (if configured).
+It is possible to use the ```WCSession``` interface directly for sending messages to the counterpart. This will bypass the watchLink framework and these messages will be detected as direct and delivered to the default message handler (if configured).
 
-Note that if you access the ```WCSession``` interface directly your code is responsible for error handling and ensuring that he counterpart app is reachable before sending messages.
+Note that if you access the ```WCSession``` interface directly your code is responsible for error handling and ensuring that the counterpart app is reachable before sending messages.
 
+Dictionary messsages can be sent directly (bypassing the watchLink framework) from the iOS app using ```watchLink.wcSessionCommand```. The Watch app must be reachable (otherwise the error callback will be invoked).
+```
+watchLink.wcSessionCommand = function('sendMessage', payload, error)
+//	payload = <property-list-dictionary>
+//	error = function(msg)
+//		Invoked in the case of an error
+```
 ## Data message passing
 
 Data messages are actually sent using dictionary messages. Both the iOS app and watchOS app can bind a message handler function to handle incoming data messages.
@@ -613,12 +620,19 @@ A data message handler in the watchOS app is bound using ```bindDataMessageHandl
 ```
 bindDataMessageHandler(handler: @escaping ((Data) -> Bool))
 ```
-#### Nonconforming dictionary message handling
+#### Direct data message handling
 
-It is possible to use the ```WCSession``` interface directly for sending data messages to the counterpart. This will bypass the watchLink framework and these messages will be detected as nonconforming and delivered to the data message handler (if configured).
+It is possible to use the ```WCSession``` interface directly for sending data messages to the counterpart. This will bypass the watchLink framework and these messages will be detected as direct and delivered to the data message handler (if configured).
 
-Note that if you access the ```WCSession``` interface directly your code is responsible for error handling and ensuring that he counterpart app is reachable before sending messages.
+Note that if you access the ```WCSession``` interface directly your code is responsible for error handling and ensuring that the counterpart app is reachable before sending messages.
 
+Dictionary messsages can be sent directly (bypassing the watchLink framework) from the iOS app using ```watchLink.wcSessionCommand```. The Watch app must be reachable (otherwise the error callback will be invoked).
+```
+watchLink.wcSessionCommand = function('sendDataMessage', payload, error)
+//	payload = <ArrayBuffer>
+//	error = function(msg)
+//		Invoked in the case of an error
+```
 ## User information transfers
 
 A dictionary of values representing user information may be transmitted in either direction. These transfers can occur in background (when the companion app is not reachable).
@@ -782,12 +796,17 @@ User information transfer handlers in the watchOS app are bound using ```bindUse
 ```
 bindUserInfoHandler(handler: @escaping (([String: Any]) -> Void))
 ```
-#### Nonconforming user information transfer handling
+#### Direct user information transfer handling
 
-It is possible to use the ```WCSession``` interface directly for transfering user information to the counterpart. This will bypass the watchLink framework and these transfers will be detected as nonconforming and delivered to the user information handler (if configured).
+It is possible to use the ```WCSession``` interface directly for transfering user information to the counterpart. This will bypass the watchLink framework and these transfers will be detected as direct and delivered to the user information handler (if configured).
 
-Note that if you access the ```WCSession``` interface directly your code is responsible for error handling and ensuring that he counterpart app is available before sending messages.
+Note that if you access the ```WCSession``` interface directly your code is responsible for error handling and ensuring that he counterpart app is available before sending user information transfers.
 
+User information transfers can be sent directly (bypassing the watchLink framework) from the iOS app using ```watchLink.wcSessionCommand```. The Watch app must be reachable. There is no provision for an error callback.
+```
+watchLink.wcSessionCommand = function('updateUserInfo', payload)
+//	payload = <property-list-dictionary>
+```
 ## Application context transfers
 
 A dictionary of values representing application context information may be transmitted in either direction. These transfers can occur in background (when the watchOS app is not reachable, i.e. the watchOS app is not in foreground).
@@ -904,11 +923,19 @@ Application context transfer handlers in the watchOS app are bound using ```bind
 ```
 bindContextHandler(handler: @escaping (([String: Any]) -> Void))
 ```
-#### Nonconforming application context transfer handling
+#### Direct application context transfer handling
 
-It is possible to use the ```WCSession``` interface directly for transfering application contexts to the counterpart. This will bypass the watchLink framework and these transfers will be detected as nonconforming and delivered to the user information handler (if configured).
+It is possible to use the ```WCSession``` interface directly for transfering application contexts to the counterpart. This will bypass the watchLink framework and these transfers will be detected as direct and delivered to the user information handler (if configured).
 
-Note that if you access the ```WCSession``` interface directly your code is responsible for error handling and ensuring that he counterpart app is available before sending messages.
+Note that if you access the ```WCSession``` interface directly your code is responsible for error handling and ensuring that he counterpart app is available before sending context updates.
+
+Dictionary messsages can be sent directly (bypassing the watchLink framework) from the iOS app using ```watchLink.wcSessionCommand```. The Watch app must be reachable (otherwise the error callback will be invoked).
+```
+watchLink.wcSessionCommand = function('updateContext', payload, error)
+//	payload = <property-list-dictionary>
+//	error = function(msg)
+//		Invoked in the case of an error
+```
 ## Complication data transfers
 
 A dictionary of values representing complication data may be transmitted in either direction. These transfers can occur in background (when the watchOS app is not reachable, i.e. the watchOS app is not in foreground).
