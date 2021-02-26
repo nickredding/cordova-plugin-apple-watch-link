@@ -141,10 +141,10 @@ After the Watch targets have been created, the file ```WatchLinkExtensionDelegat
 
 ##### Cordova iOS updates
 
-Changes to the Cordova iOS app code (platform, plugins and application logic) can be applied to the baseline project and then applied to the ```watchtarget``` iOS platform directory as illustrated by the following Terminal session. 
+Changes to the Cordova iOS app code (platform, plugins and application logic) can be applied to the baseline project and then applied to the ```watchtarget``` iOS platform directory as illustrated by the following Terminal session (where ```AppIOS``` is the name of the iOS app target). 
 ```
 $cd Documents/AppProject
-$.update.sh AppProject
+$.update.sh AppProject AppIOS
 
 	Updating AppProject in watchtarget/platforms/ios
 
