@@ -8,3 +8,5 @@
 
 * Bug fixes.
 * Add direct messaging to test app.
+
+#### 1.0.2
