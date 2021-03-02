@@ -1333,7 +1333,7 @@ The iPhone screen provides buttons to exercise the following communication funct
 * Send a data message to the watch
 * Send a user information update to the watch
 * Send an application context update to the watch
-* Enable or disble acknowledgement for the above functions
+* Enable or disable acknowledgement for the above functions
 * Use direct access to WCSession for the above functions
 * Send a complication update to the watch
 * Schedule a local notification
