@@ -21,7 +21,7 @@
 
 Apple watch communication plugin for Cordova.
 
-Access as watchLink
+Access as window.cordova.plugins.watchLink
 
 */
 
@@ -539,19 +539,9 @@ function watchLink() {
         if (typeof success === 'undefined' && typeof error === 'undefined') {
             return new Promise(
                 function(resolve, reject) {
-                    if (_watchLink.available !== true) {
-                        reject('unavailable', msgType, msgBody);
-                        return;
-                    }
                     cordova.exec(resolve, reject, 'WatchLink', 'sendMessage', 
                                  [msgType || '', msgBody]);
                 });
-        }
-        if (_watchLink.available !== true) {
-            if (error) {
-                error('unavailable', msgType, msgBody);
-            }
-            return;
         }
         if (success === null) {
             cordova.exec(success, error, 'WatchLink', 'sendMessageNoAck', 
@@ -739,18 +729,8 @@ function watchLink() {
         if (typeof success === 'undefined' && typeof error === 'undefined') {
             return new Promise(
                 function(resolve, reject) {
-                    if (_watchLink.available !== true) {
-                        reject('unavailable', msgData);
-                        return;
-                    }
                     cordova.exec(resolve, reject, 'WatchLink', 'sendDataMessage', [msgData]);
                 });
-        }
-        if (_watchLink.available !== true) {
-            if (error) {
-                error('unavailable', msgData);
-            }
-            return;
         }
         if (success === null) {
             cordova.exec(success, error, 'WatchLink', 'sendDataMessageNoAck', [msgData]);
@@ -876,18 +856,8 @@ function watchLink() {
         if (typeof success === 'undefined' && typeof error === 'undefined') {
             return new Promise(
                 function(resolve, reject) {
-                    if (_watchLink.available !== true) {
-                        reject('unavailable');
-                        return;
-                    }
                     cordova.exec(resolve, reject, 'WatchLink', 'sendUserInfo', [userInfo]);
                 });
-        }
-        if (_watchLink.available !== true) {
-            if (error) {
-                error('unavailable');
-            }
-            return;
         }
         if (success === null) {
             cordova.exec(success, error, 'WatchLink', 'sendUserInfoNoAck', [userInfo]);
@@ -939,17 +909,9 @@ function watchLink() {
         if (success === undefined && error === undefined) {
             return new Promise(
                 function(resolve, reject) {
-                    if (_watchLink.available !== true) {
-                        reject('unavailable');
-                        return;
-                    }
                     cordova.exec(resolve, reject, 'WatchLink', 'queryUserInfo', 
                                  [timestamp]);
                 });
-        }
-        if (_watchLink.available !== true) {
-            error('unavailable');
-            return;
         }
         cordova.exec(success, error, 'WatchLink', 'queryUserInfo', [timestamp]);
     };
@@ -996,17 +958,9 @@ function watchLink() {
         if (success === undefined && error === undefined) {
             return new Promise(
                 function(resolve, reject) {
-                    if (_watchLink.available !== true) {
-                        reject('unavailable');
-                        return;
-                    }
                     cordova.exec(resolve, reject, 'WatchLink', 'cancelUserInfo', 
                                  [timestamp]);
                 });
-        }
-        if (_watchLink.available !== true) {
-            error('unavailable');
-            return;
         }
         cordova.exec(success, error, 'WatchLink', 'cancelUserInfo', [timestamp]);
     };
@@ -1062,17 +1016,9 @@ function watchLink() {
         if (success == null && error == null) {
             return new Promise(
                 function(resolve, reject) {
-                    if (_watchLink.available !== true) {
-                        reject('unavailable');
-                        return;
-                    }
                     cordova.exec(resolve, reject, 'WatchLink', 
                                  'outstandingUserInfoTransfers', []);
                 });
-        }
-        if (_watchLink.available !== true) {
-            error('unavailable');
-            return;
         }
         cordova.exec(success, error, 'WatchLink', 'outstandingUserInfoTransfers', []);
     };
@@ -1181,18 +1127,8 @@ function watchLink() {
         if (typeof success === 'undefined' && typeof error === 'undefined') {
             return new Promise(
                 function(resolve, reject) {
-                    if (_watchLink.available !== true) {
-                        reject('unavailable');
-                        return;
-                    }
                     cordova.exec(resolve, reject, 'WatchLink', 'sendContext', [context]);
                 });
-        }
-        if (_watchLink.available !== true) {
-            if (error) {
-                error('unavailable');
-            }
-            return false;
         }
         if (success === null) {
             cordova.exec(success, error, 'WatchLink', 'sendContextNoAck', [context]);
@@ -1248,16 +1184,8 @@ function watchLink() {
         if (success === undefined && error === undefined) {
             return new Promise(
                 function(resolve, reject) {
-                    if (_watchLink.available !== true) {
-                        reject('unavailable');
-                        return;
-                    }
                     cordova.exec(resolve, reject, 'WatchLink', 'latestContextSent', []);
                 });
-        }
-        if (_watchLink.available !== true) {
-            error('unavailable');
-            return;
         }
         cordova.exec(success, error, 'WatchLink', 'latestContextSent', []);
     };
@@ -1308,16 +1236,8 @@ function watchLink() {
         if (success === undefined && error === undefined) {
             return new Promise(
                 function(resolve, reject) {
-                    if (_watchLink.available !== true) {
-                        reject('unavailable');
-                        return;
-                    }
                     cordova.exec(resolve, reject, 'WatchLink', 'latestContextReceived', []);
                 });
-        }
-        if (_watchLink.available !== true) {
-            error('unavailable');
-            return;
         }
         cordova.exec(success, error, 'WatchLink', 'latestContextReceived', []);
     };
@@ -1376,8 +1296,8 @@ function watchLink() {
         watchLink.sendComplicationInfo(complicationInfo);    
     */
     _watchLink.sendComplicationInfo = function(complicationInfo) {
-        if (!_watchLink.initialized || _watchLink.available !== true) {
-            _watchLink.errorLog('watchLink.sendComplicationInfo ignored: watch session not ' + (_watchLink.initialized ? 'available' : 'initialized'));
+        if (!_watchLink.initialized || _watchLink.available !== true || (_watchLink.applicationState && !_watchLink.applicationState.complication)) {
+            _watchLink.errorLog('watchLink.sendComplicationInfo: ' + (_watchLink.initialized ? (_watchLink.available !== true ? 'watch session not available' : 'complication not enabled') : 'watch session not initialized'));
             return;
         }
         var err = '';
@@ -1399,9 +1319,7 @@ function watchLink() {
             return false;
         }
         complicationInfo.TIMESTAMP = newTimestamp();
-        if (_watchLink.available !== true) {
-            return false;
-        }
+        complicationInfo.ISCOMPLICATION = true;
         cordova.exec(null, null, 'WatchLink', 'sendComplicationInfo', [complicationInfo]);
         return true;
     };
@@ -1412,17 +1330,17 @@ function watchLink() {
     */
     
     _watchLink.queryComplication = function(timestamp, success, error) {
-        if (!_watchLink.initialized || _watchLink.available !== true) {
-            _watchLink.errorLog('watchLink.queryComplication: watch session not ' + (_watchLink.initialized ? 'available' : 'initialized'));
+        if (!_watchLink.initialized || _watchLink.available !== true || (_watchLink.applicationState && !_watchLink.applicationState.complication)) {
+            _watchLink.errorLog('watchLink.queryComplication: ' + (_watchLink.initialized ? (_watchLink.available !== true ? 'watch session not available' : 'complication not enabled') : 'watch session not initialized'));
             if (success === undefined && error === undefined) {
                 return new Promise(
                     function(resolve, reject) {
-                            reject(_watchLink.initialized ? 'not available' : 'uninitialized');
+                            reject(_watchLink.initialized ? (_watchLink.available !== true ? 'not available' : 'nocomplication') : 'uninitialized');
                     });
             }
             else
             if (error) {
-                error(_watchLink.initialized ? 'not available' : 'uninitialized');
+                error(_watchLink.available !== true ? 'not available' : (_watchLink.available !== true ? 'nocomplication' : 'uninitialized'));
             }
             return;
         }
@@ -1448,17 +1366,9 @@ function watchLink() {
         if (success === undefined && error === undefined) {
             return new Promise(
                 function(resolve, reject) {
-                    if (_watchLink.available !== true) {
-                        reject('unavailable');
-                        return;
-                    }
                     cordova.exec(resolve, reject, 'WatchLink', 'queryComplication', 
                                  [timestamp]);
                 });
-        }
-        if (_watchLink.available !== true) {
-            error('unavailable');
-            return;
         }
         cordova.exec(success, error, 'WatchLink', 'queryComplication', [timestamp]);
     };
@@ -1479,17 +1389,17 @@ function watchLink() {
     */
     
     _watchLink.cancelComplication = function(timestamp, success, error) {
-        if (!_watchLink.initialized || _watchLink.available !== true) {
-            _watchLink.errorLog('watchLink.cancelComplication: watch session not ' + (_watchLink.initialized ? 'available' : 'initialized'));
+        if (!_watchLink.initialized || _watchLink.available !== true || (_watchLink.applicationState && !_watchLink.applicationState.complication)) {
+            _watchLink.errorLog('watchLink.cancelComplication: ' + (_watchLink.initialized ? (_watchLink.available !== true ? 'watch session not available' : 'complication not enabled') : 'watch session not initialized'));
             if (success === undefined && error === undefined) {
                 return new Promise(
                     function(resolve, reject) {
-                            reject(_watchLink.initialized ? 'not available' : 'uninitialized');
+                            reject(_watchLink.available !== true ? 'not available' : (_watchLink.available !== true ? 'nocomplication' : 'uninitialized'));
                     });
             }
             else
             if (error) {
-                error(_watchLink.initialized ? 'not available' : 'uninitialized');
+                error(_watchLink.available !== true ? 'not available' : (_watchLink.available !== true ? 'nocomplication' : 'uninitialized'));
             }
             return;
         }
@@ -1515,17 +1425,9 @@ function watchLink() {
         if (success === undefined && error === undefined) {
             return new Promise(
                 function(resolve, reject) {
-                    if (_watchLink.available !== true) {
-                        reject('unavailable');
-                        return;
-                    }
                     cordova.exec(resolve, reject, 'WatchLink', 'cancelComplication', 
                                  [timestamp]);
                 });
-        }
-        if (_watchLink.available !== true) {
-            error('unavailable');
-            return;
         }
         cordova.exec(success, error, 'WatchLink', 'cancelComplication', [timestamp]);
     };
@@ -1546,17 +1448,17 @@ function watchLink() {
     */
     
     _watchLink.outstandingComplicationTransfers = function(success, error) {
-        if (!_watchLink.initialized || _watchLink.available !== true) {
-            _watchLink.errorLog('watchLink.outstandingComplicationTransfers: watch session not ' + (_watchLink.initialized ? 'available' : 'initialized'));
+        if (!_watchLink.initialized || _watchLink.available !== true || (_watchLink.applicationState && !_watchLink.applicationState.complication)) {
+            _watchLink.errorLog('watchLink.outstandingComplicationTransfers: ' + (_watchLink.initialized ? (_watchLink.available !== true ? 'watch session not available' : 'complication not enabled') : 'watch session not initialized'));
             if (success === undefined && error === undefined) {
                 return new Promise(
                     function(resolve, reject) {
-                            reject(_watchLink.initialized ? 'not available' : 'uninitialized');
+                            reject(_watchLink.available !== true ? 'not available' : (_watchLink.available !== true ? 'nocomplication' : 'uninitialized'));
                     });
             }
             else
             if (error) {
-                error(_watchLink.initialized ? 'not available' : 'uninitialized');
+                error(_watchLink.available !== true ? 'not available' : (_watchLink.available !== true ? 'nocomplication' : 'uninitialized'));
             }
             return;
         }
@@ -1577,17 +1479,9 @@ function watchLink() {
         if (success === undefined && error === undefined) {
             return new Promise(
                 function(resolve, reject) {
-                    if (_watchLink.available !== true) {
-                        reject('unavailable');
-                        return;
-                    }
                     cordova.exec(resolve, reject, 'WatchLink', 
                                  'outstandingComplicationTransfers', []);
                 });
-        }
-        if (_watchLink.available !== true) {
-            error('unavailable');
-            return;
         }
         cordova.exec(success, error, 'WatchLink', 'outstandingComplicationTransfers', []);
     };
@@ -1597,6 +1491,10 @@ function watchLink() {
     */
     
     _watchLink.flushComplicationTransfers = function() {
+        if (!_watchLink.initialized || _watchLink.available !== true || (_watchLink.applicationState && !_watchLink.applicationState.complication)) {
+            _watchLink.errorLog('watchLink.flushComplicationTransfers: ' + (_watchLink.initialized ? (_watchLink.available !== true ? 'watch session not available' : 'complication not enabled') : 'watch session not initialized'));
+            return;
+        }
         cordova.exec(null, null, 'WatchLink', 'flushComplicationTransfers', []);
     };
     
@@ -1616,17 +1514,17 @@ function watchLink() {
     */
     
     _watchLink.queryComplicationQuota = function(success, error) {
-        if (!_watchLink.initialized || _watchLink.available !== true) {
-            _watchLink.errorLog('watchLink.queryComplicationQuota: watch session not ' + (_watchLink.initialized ? 'available' : 'initialized'));
+        if (!_watchLink.initialized || _watchLink.available !== true || (_watchLink.applicationState && !_watchLink.applicationState.complication)) {
+            _watchLink.errorLog('watchLink.queryComplicationQuota: ' + (_watchLink.initialized ? (_watchLink.available !== true ? 'watch session not available' : 'complication not enabled') : 'watch session not initialized'));
             if (success === undefined && error === undefined) {
                 return new Promise(
                     function(resolve, reject) {
-                            reject(_watchLink.initialized ? 'not available' : 'uninitialized');
+                            reject(_watchLink.available !== true ? 'not available' : (_watchLink.available !== true ? 'nocomplication' : 'uninitialized'));
                     });
             }
             else
             if (error) {
-                error(_watchLink.initialized ? 'not available' : 'uninitialized');
+                error(_watchLink.available !== true ? 'not available' : (_watchLink.available !== true ? 'nocomplication' : 'uninitialized'));
             }
             return;
         }
@@ -1652,17 +1550,9 @@ function watchLink() {
         if (success === undefined && error === undefined) {
             return new Promise(
                 function(resolve, reject) {
-                    if (_watchLink.available !== true) {
-                        reject('unavailable');
-                        return;
-                    }
                     cordova.exec(resolve, reject, 'WatchLink', 'queryComplicationQuota', 
                                  []);
                 });
-        }
-        if (_watchLink.available !== true) {
-            error('unavailable');
-            return;
         }
         cordova.exec(success, error, 'WatchLink', 'queryComplicationQuota', []);
     };

@@ -801,6 +801,8 @@ User information transfer handlers in the watchOS app are bound using ```bindUse
 ```
 bindUserInfoHandler(handler: @escaping (([String: Any]) -> Void))
 ```
+
+**Note:** The dictionary passed to the handler will contain the key ```ISCOMPLICATION``` with value ```true``` if this is a complication update.
 #### Direct user information transfer handling
 
 It is possible to use the ```WCSession``` interface directly for transfering user information to the counterpart. This will bypass the watchLink framework and these transfers will be detected as direct and delivered to the user information handler (if configured).
@@ -943,7 +945,9 @@ watchLink.wcSessionCommand('updateContext', payload, error)
 ```
 ## Complication data transfers
 
-A dictionary of values representing complication data may be transmitted in either direction. These transfers can occur in background (when the watchOS app is not reachable, i.e. the watchOS app is not in foreground).
+A dictionary of values representing complication data may be transmitted from the iOS to the watchOS app. These transfers can occur in background (when the watchOS app is not reachable, i.e. the watchOS app is not in foreground).
+
+Complication data transfers are sent as high priority user information transfers. They are delivered to the watchOS app via the user information transfer handler that has been bound.
 
 #### Complication data transmission (iOS)
 
@@ -956,7 +960,8 @@ watchLink.sendComplicationInfo(complicationInfo);
 //	returns: true if transmission was initiated, false if Watch 
 //		is unavailable
 ```
-watchLink.sendComplicationInfo adds the key ```TIMESTAMP``` to the complicationInfo object which contains a unique timestamp representing the transfer. Note that if complicationInfo contains an existing key ```TIMESTAMP``` it will be overwritten with the timestamp. This value can be used to query the status of the transfer, and cancel the transfer if desired. The value of this key can be retrieved from the supplied complicationInfo object immediately upon return from the function invocation.
+watchLink.sendComplicationInfo adds the keys ```TIMESTAMP``` and ```ISCOMPLICATION``` to the complicationInfo object. ```TIMESTAMP``` contains a unique timestamp representing the transfer. Note that if complicationInfo contains existing keys ```TIMESTAMP``` or ```ISCOMPLICATION``` they will be overwritten. The ```TIMESTAMP``` value can be used to query the status of the transfer, and cancel the transfer if desired. The value of this key can be retrieved from the supplied complicationInfo object immediately upon return from the function invocation.
+
 **Note:** the complicationInfo sent to the Swift layer is a clone of the object submitted to the sendComplicationInfo function.
 
 #### Complication data transfer status and flushing (iOS)
@@ -1290,17 +1295,17 @@ func printErrorLog(_ msg: String)
 
 func watchLog(_ msg: String)
 //	Send the message msg to the Watch Xcode and Javascript consoles
-//	Will appear as "<<Watch[hh:mm:dd]>> msg":
+//	Will appear as "<<WATCH [hh:mm:dd]>> msg":
 //	Will be ignored if Watch log level is "none", "app" or "error"
 
 func watchAppLog(_ msg: String)
 //	Send the message msg to the Watch Xcode and Javascript consoles
-//	Will appear as "<<Watch[hh:mm:dd]App>> msg"
+//	Will appear as "<<WATCH [hh:mm:dd]App>> msg"
 //	Will be ignored if Watch log level is "none" or "error"
 
 func watchErrorLog(_ msg: String)
 //	Send the message msg to the Watch Xcode and Javascript consoles
-//	Will appear as "<<Watch[hh:mm:dd]Error>> msg"
+//	Will appear as "<<WATCH [hh:mm:dd]Error>> msg"
 //	Will be ignored if Watch log level is "none"
 ```
 ## watchLink test app
@@ -1309,7 +1314,14 @@ The plugin includes a fully functional test app that illustrates the use of the 
 
 To run the app, copy and decompress the file ```platforms.zip``` and open the ```platforms/ios/TestWatchLink.xcodeproj``` Xcode file. Set the *Team* in each of the targets to your team identifier. The app is now ready to run.
 
-<img src="https://raw.githubusercontent.com/nickredding/cordova-plugin-apple-watch-link/master/Docs/iphone-screen.1.0.1.png" align="right" width="250">
+#### Xcode limitations and quirks
+
+There are some limitations using the Xcode simulator with iOS and watchOS companion apps.
+* The simulator does not support user information transfers.
+* The simulator allows a complication to be added to the watch screen but the iOS app will not see the complication as being available and updates to the complication will not be processed.
+If you run the watchOS app from Xcode and then quit Xcode (disconnecting it from the watch) the watchOS app will not function properly for background processing. To restore correct operation you must quit the iOS app (swipe it up from the iPhone window display) and launch it again.
+
+<img src="https://raw.githubusercontent.com/nickredding/cordova-plugin-apple-watch-link/master/Docs/iphone-screen.1.0.2.png" align="right" width="250">
 
 #### Test app iPhone screen
 The iPhone screen provides buttons to exercise the following communication functions:
@@ -1317,7 +1329,9 @@ The iPhone screen provides buttons to exercise the following communication funct
 * Send a data message to the watch
 * Send a user information update to the watch
 * Send an application context update to the watch
-* Enable or disble acknowledgement for the above functions
+* Send a complication update to the watch
+* Enable or disble acknowledgement for the above functions (excluding complication update which is unacknowledged)
+* Use direct access to WCSession for the above functions (excluding complication update which is always direct)
 * Schedule a local notification
 * Cancel a scheduled notification
 * Cancel all scheduled notification
@@ -1335,17 +1349,18 @@ The Watch screen provides a console where the test app posts results of communic
 * Send a data message to the watch
 * Send a user information update to the watch
 * Send an application context update to the watch
+* Show the last received user information and aplication context transfers.
 Acknowledgement can be enabled or disbled acknowledgement for each of functions from their respective pages.
 
 The Watch screen shots show the console screen reporting the receipt of the iPhone message and the message screen showing the transmission of an acknowledged message to the iPhone.
 
-<img src="https://raw.githubusercontent.com/nickredding/cordova-plugin-apple-watch-link/master/Docs/watch-screen.1.0.1.png" align="center" width="800">
+<img src="https://raw.githubusercontent.com/nickredding/cordova-plugin-apple-watch-link/master/Docs/watch-screen.1.0.2.png" align="center" width="800">
 
 #### Testing via Javascript
 
 The test app can be observed and exercised from the Javascript console. After launching the app, open the Safari Web Inspector console to view the logs generated by the test app activity.
 
-You can also invoke functions to generate message traffic from the console. Acknowledgements will be used based on the checkbox setting.
+You can also invoke functions to generate message traffic and notifications from the console. Acknowledgements will be used based on the checkbox setting.
 ```
 testmsg(msg)
 	// msg is an object (<property-list-dictionary>)
@@ -1359,6 +1374,13 @@ testuserinfo(userinfo)
 
 testcontext(context)
 	// context is an object (<property-list-dictionary>)
+
+testcomplication(userinfo)
+	// userinfo is an object (<property-list-dictionary>)
+	
+notify(delay, title, subtitle, body, userInfo)
+//	delay is the trigger
+//	{ title, subtitle, body, userInfo } is the payload
 ```
 #### Annotated log example (iOS test app sends message to Watch)
 
@@ -1391,7 +1413,7 @@ The following logs appear in the Javascript console.
 [12:00:00.148]>> Watch Application State: ACTIVE 
 
 // WatchLinkExtensionDelegate.swift indicates message received
-Watch[12:00:00.224]>> Received message 
+WATCH [12:00:00.224]>> Received message 
 	TEST: ["TIMESTAMP": 1613764792634, "b": 253, "a": 223] 
 
 // WatchLink.swift indicates message ack received
@@ -1437,7 +1459,7 @@ of the Javascript console logs appear here as well.
 [12:00:00.148]>> Watch Application State: ACTIVE
 
 // WatchLinkExtensionDelegate.swift indicates message received
-Watch[12:00:00.224]>> Received message 
+WATCH [12:00:00.224]>> Received message 
 	TEST: ["TIMESTAMP": 1613764792634, "b": 253, "a": 223]
 
 // WatchLink.swift indicates message ack received

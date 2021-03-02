@@ -42,7 +42,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		appLogLevel = getLogLevel("watchLinkAppLogLevel", appLogLevel)
 		watchLogLevel = getLogLevel("watchLinkWatchLogLevel", watchLogLevel)
 		watchPrintLogLevel = getLogLevel("watchLinkWatchPrintLogLevel", watchPrintLogLevel)
-		NSLog("WatchLink initialized, appLogLevel = " + String(appLogLevel) +
+		NSLog("watchLink initialized, appLogLevel = " + String(appLogLevel) +
                     " watchLogLevel = " + String(watchLogLevel) +
                     " watchPrintLogLevel = " + String(watchPrintLogLevel))
         watchSystemMessages = "WATCHAPPACTIVE|WATCHINAPPACTIVE|WATCHAPPBACKGROUND|WATCHLOG|WATCHAPPLOG|WATCHERRORLOG"
@@ -76,6 +76,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 	
 	// watch availability, reachability and watch application state
 	
+    let watchStateLock = NSLock()
 	var watchActivated = false
 	var isReachable = false
 	var applicationState = ""
@@ -286,9 +287,9 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
                 watchURL = session.watchDirectoryURL!.absoluteString
             }
 			if (session.isReachable) {
-				sendLog("WatchLink session activation complete: Reachable")
+				sendLog("watchLink session activation complete: Reachable")
 			} else {
-				sendLog("WatchLink session activation complete: NOT Reachable")
+				sendLog("watchLink session activation complete: NOT Reachable")
 			}
 			initialized = true
 			notifyAvailability()
@@ -302,40 +303,49 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		else {
 			watchActivated = false
 			if (activationState == WCSessionActivationState.notActivated) {
-				sendErrorLog("WatchLink session not activated: " + error!.localizedDescription)
+				sendErrorLog("watchLink session not activated: " + error!.localizedDescription)
 			}
 			else {
-				sendErrorLog("WatchLink session inactive: " + error!.localizedDescription)
+				sendErrorLog("watchLink session inactive: " + error!.localizedDescription)
 			}
 		}
 	}
 
 	func sessionDidBecomeInactive(_ session: WCSession) {
+        watchStateLock.lock()
 		watchActivated = false
-		sendLog("WatchLink session deactivating")
+		sendLog("watchLink session deactivating")
 		notifyAvailability()
 		notifyApplicationState()
 		notifyReachability()
+        watchStateLock.unlock()
 	}
 
 	func sessionDidDeactivate(_ session: WCSession) {
+        watchStateLock.lock()
 		watchActivated = false
-		sendLog("WatchLink session deactivation complete")
+		sendLog("watchLink session deactivation complete")
 		notifyAvailability()
 		notifyApplicationState()
 		notifyReachability()
+        watchStateLock.unlock()
 	}
 
 	func sessionWatchStateDidChange(_ session: WCSession) {
-		sendLog("WatchLink session state change")
+        watchStateLock.lock()
+		sendLog("watchLink session state change")
         notifyAvailability()
         notifyApplicationState()
+        notifyReachability()
+        watchStateLock.unlock()
 	}
 
 	func sessionReachabilityDidChange(_ session: WCSession) {
-		let session = WCSession.default
+        watchStateLock.lock()
+        let session = WCSession.default
 		isReachable = session.isReachable
 		notifyReachability()
+        watchStateLock.unlock()
 	}
 	
 	// utility routines
@@ -467,9 +477,6 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
             lock.lock()
 			var callbackId = ""
 			var removed: Int64 = 0
-			if (msgQueue.isEmpty) {
-				print("clearQueue \(timestamp) empty watchMessageQueue")
-			}
 			while (!msgQueue.isEmpty && msgQueue.first!.timestamp <= timestamp) {
 				if (msgQueue.first!.timestamp == timestamp) {
 					callbackId = msgQueue.first!.callbackId
@@ -477,8 +484,6 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 				}
 				else { // the ack for message was somehow lost
 					watchObj.resetCallback(msgQueue.first!.callbackId, msgQueue.first!.timestamp)
-					print(
-						"clearQueue reset: first \(msgQueue.first!.timestamp) not acknowledged")
 				}
 				msgQueue.remove(at: 0)
 			}
@@ -767,7 +772,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 			}
 		}
 		if (watchUserInfoQueue.processing) {
-			sendLog("processQueue--processing UserInfo")
+            sendLog("processQueue--processing UserInfo " + String(describing:watchUserInfoQueue.msgQueue))
 		}
 		if (pendingContextUpdate != nil && !pendingContextUpdate.sent) {
 			dispatchContext();
@@ -858,28 +863,34 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 				processQueue()
 			case "WATCHAPPACTIVE":
 				// watch app active
+                watchStateLock.lock()
 				applicationState = "ACTIVE"
 				notifyApplicationState()
+                watchStateLock.unlock()
 			case "WATCHAPPINACTIVE":
 				// watch app inactive
+                watchStateLock.lock()
 				applicationState = "INACTIVE"
 				notifyApplicationState()
+                watchStateLock.unlock()
 			case "WATCHAPPBACKGROUND":
 				// watch app background
+                watchStateLock.lock()
 				applicationState = "BACKGROUND"
 				notifyApplicationState()
+                watchStateLock.unlock()
 			case "WATCHLOG":
 				// it's a log from the watch
 				let msg = msgBody as! [String: String]
-				sendWatchLog("Watch" + Date().timeOfDay() + ">> " + msg["msg"]!)
+				sendWatchLog("WATCH " + Date().timeOfDay() + ">> " + msg["msg"]!)
 			case "WATCHERRORLOG":
 				// it's an errorlog from the watch
 				let msg = msgBody as! [String: String]
-				sendWatchErrorLog("Watch" + Date().timeOfDay() + "Error>> " + msg["msg"]!)
+				sendWatchErrorLog("WATCH " + Date().timeOfDay() + "Error>> " + msg["msg"]!)
 			case "WATCHAPPLOG":
 				// it's an app log from the watch
 				let msg = msgBody as! [String: String]
-				sendWatchAppLog("Watch" + Date().timeOfDay() + "App>> " + msg["msg"]!)
+				sendWatchAppLog("WATCH " + Date().timeOfDay() + "App>> " + msg["msg"]!)
 			case "DATA":
 				if (receivedDataMessageCallbackId != nil) {
                     let msgData = msgBody as! Data
@@ -1572,11 +1583,6 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 								result = CDVPluginResult(status: CDVCommandStatus_OK, 
 											messageAs: timestamp)
 								self.commandDelegate.send(result, callbackId: command.callbackId)
-                                center.getPendingNotificationRequests(completionHandler:
-                                    {
-                                        (requests: [UNNotificationRequest]) in
-                                        print(String(describing: requests))
-                                    })
                             }
                         }
         )

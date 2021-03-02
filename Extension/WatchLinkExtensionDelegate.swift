@@ -230,7 +230,7 @@ func printAppLog(_ msg: String) {
 
 func printErrorLog(_ msg: String) {
 	if (watchPrintLogLevel > 0) {
-		print("Print" + Date().timeOfDay() + "Error>>" + msg)
+		print("Print" + Date().timeOfDay() + "Error>> " + msg)
 	}
 }
 
@@ -861,6 +861,15 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 	// application user info
 	func session(_ session: WCSession, didReceiveUserInfo userInfo: [String : Any]) {
         printLog("Received user info " + String(describing: userInfo))
+        let complication = userInfo["ISCOMPLICATION"] as? Bool
+        if (complication != nil) {
+            printLog("didReceiveUserInfo complication update=" +
+                String(describing: userInfo))
+            if (watchUserInfoHandler != nil) {
+                watchUserInfoHandler!(-1, userInfo)
+            }
+            return
+        }
 		guard let timestamp = userInfo["TIMESTAMP"] as? Int64
 		else {
 			printLog("didReceiveUserInfo TIMESTAMP not found message=" +
