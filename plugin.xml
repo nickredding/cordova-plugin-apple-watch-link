@@ -17,7 +17,7 @@
   under the License.
 -->
 
-<plugin id="cordova-plugin-apple-watch-link" version="1.0.2" xmlns="http://apache.org/cordova/ns/plugins/1.0">
+<plugin id="cordova-plugin-apple-watch-link" version="1.0.3" xmlns="http://apache.org/cordova/ns/plugins/1.0">
     <name>Apple Watch Link</name>
     <author>Nick Redding</author>
     <description>Cordova Plugin for the Apple Watch (WatchKit) to allow communicatn between a Cordova app and an Apple WatchKit Extension (and vice versa)</description>
