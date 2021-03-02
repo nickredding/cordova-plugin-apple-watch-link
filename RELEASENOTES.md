@@ -10,3 +10,6 @@
 * Add direct messaging to test app.
 
 #### 1.0.2
+
+* Bug fixes.
+* Added complication testing to the test app.
