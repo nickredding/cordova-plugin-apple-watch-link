@@ -2280,11 +2280,17 @@ function watchLink() {
             cordova.exec(
                 function() {
                     _watchLink.initialized = true;
+                    _watchLink.resetSession(
+                        function(status) {
+                            if (status === true) {
+                                _watchLink.log('watchLink RESET complete');
+                            }
+                        }, 
+                        'watchLink-deviceready');
                     watchLinkReadyProcs.forEach(
                         function(f) {
                             f();
                         });
-                    watchLinkReadyProcs = [];
                 },
                 null, 'WatchLink', 'initializationComplete');
             cordova.exec(
@@ -2294,16 +2300,6 @@ function watchLink() {
                     if (availabilityChangedCallback && availability !== 'uninitialized') {
                         availabilityChangedCallback(availability);
                     }
-                    _watchLink.ready(
-                        function() {
-                            _watchLink.resetSession(
-                                function(status) {
-                                    if (status === true) {
-                                        _watchLink.log('watchLink RESET complete');
-                                    }
-                                }, 
-                                'watchLink-deviceready');
-                        });
                 },
                 null, 'WatchLink', 'availabilityChanged');
             cordova.exec(
