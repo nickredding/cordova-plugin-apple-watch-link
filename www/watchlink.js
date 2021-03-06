@@ -2276,14 +2276,6 @@ function watchLink() {
     document.addEventListener("deviceready",
         function() {
             _watchLink.log('watchLink deviceready');
-            _watchLink.ready(
-                function() {
-                    _watchLink.resetSession(
-                        function() {
-                            _watchLink.log('watchLink RESET complete');
-                        }, 
-                        'watchLink-deviceready');
-                });
             startLog();
             cordova.exec(
                 function() {
@@ -2302,6 +2294,16 @@ function watchLink() {
                     if (availabilityChangedCallback && availability !== 'uninitialized') {
                         availabilityChangedCallback(availability);
                     }
+                    _watchLink.ready(
+                        function() {
+                            _watchLink.resetSession(
+                                function(status) {
+                                    if (status === true) {
+                                        _watchLink.log('watchLink RESET complete');
+                                    }
+                                }, 
+                                'watchLink-deviceready');
+                        });
                 },
                 null, 'WatchLink', 'availabilityChanged');
             cordova.exec(
