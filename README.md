@@ -1323,6 +1323,7 @@ Xcode file. Set the *Team* in each of the targets to your team identifier. The a
 There are some limitations using the Xcode simulator with iOS and watchOS companion apps.
 * The simulator does not support user information transfers.
 * The simulator allows a complication to be added to the watch screen but the iOS app will not see the complication as being available and updates to the complication will not be processed.
+
 If you run the watchOS app from Xcode and then quit Xcode (disconnecting it from the watch) the watchOS app will not function properly for background processing. To restore correct operation you must quit the iOS app (swipe it up from the iPhone window display) and launch it again.
 
 <img src="https://raw.githubusercontent.com/nickredding/cordova-plugin-apple-watch-link/master/Docs/iphone-screen.1.0.2.png" align="right" width="250">
