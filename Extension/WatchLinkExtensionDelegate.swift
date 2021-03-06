@@ -242,17 +242,17 @@ func watchLog(_ msg: String) {
 	printLog(msg)
 }
 
-func watchErrorLog(_ msg: String) {
-	if (watchLogLevel > 0) {
-        _ = messageToPhone(msgType: "WATCHERRORLOG", msgBody: ["msg": msg],
+func watchAppLog(_ msg: String) {
+	if (watchLogLevel > 1) {
+        _ = messageToPhone(msgType: "WATCHAPPLOG", msgBody: ["msg": msg],
 			allowReserved: true)
 	}
 	printAppLog(msg)
 }
 
-func watchAppLog(_ msg: String) {
-	if (watchLogLevel > 1) {
-        _ = messageToPhone(msgType: "WATCHAPPLOG", msgBody: ["msg": msg],
+func watchErrorLog(_ msg: String) {
+	if (watchLogLevel > 0) {
+        _ = messageToPhone(msgType: "WATCHERRORLOG", msgBody: ["msg": msg],
 			allowReserved: true)
 	}
 	printErrorLog(msg)
