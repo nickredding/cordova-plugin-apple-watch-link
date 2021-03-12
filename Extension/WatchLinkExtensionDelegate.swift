@@ -83,9 +83,11 @@ var reachabilityChanged: ((Bool) -> Void)!
 
 func bindAvailabilityHandler(_ handler: @escaping ((Bool) -> Void)) {
     availabilityChanged = handler
+    handler(phoneAvailable)
 }
 func bindReachabilityHandler(_ handler: @escaping ((Bool) -> Void)) {
     reachabilityChanged = handler
+    handler(phoneReachable)
 }
 
 func nullHandler(_ msg: String) {}
@@ -630,12 +632,18 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 	}
     
     func sessionCompanionAppInstalledDidChange(_ session: WCSession) {
+        phoneReachable = session.isReachable
+        phoneAvailable = session.isCompanionAppInstalled
         if (availabilityChanged != nil) {
             availabilityChanged(session.isCompanionAppInstalled)
+        }
+        if (reachabilityChanged != nil) {
+            reachabilityChanged(session.isReachable)
         }
     }
 
     func sessionReachabilityDidChange(_ session: WCSession) {
+        phoneReachable = session.isReachable
         if (reachabilityChanged != nil) {
             reachabilityChanged(session.isReachable)
         }
@@ -677,6 +685,8 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 	{
 		let session = WCSession.default
 		if (activationState == WCSessionActivationState.activated) {
+            phoneAvailable = true
+            phoneReachable = session.isReachable
 			if (session.isReachable) {
 				printLog("Reachability state: YES")
 			}
@@ -699,6 +709,8 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 			processQueue()
 		}
 		else {
+            phoneAvailable = false
+            phoneReachable = session.isReachable
 			if (activationState == WCSessionActivationState.notActivated) {
 				watchErrorLog("watch session not activated: " + error!.localizedDescription)
 			}
