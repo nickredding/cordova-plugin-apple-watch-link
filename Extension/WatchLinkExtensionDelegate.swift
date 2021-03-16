@@ -83,11 +83,9 @@ var reachabilityChanged: ((Bool) -> Void)!
 
 func bindAvailabilityHandler(_ handler: @escaping ((Bool) -> Void)) {
     availabilityChanged = handler
-    handler(phoneAvailable)
 }
 func bindReachabilityHandler(_ handler: @escaping ((Bool) -> Void)) {
     reachabilityChanged = handler
-    handler(phoneReachable)
 }
 
 func nullHandler(_ msg: String) {}
@@ -632,18 +630,12 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 	}
     
     func sessionCompanionAppInstalledDidChange(_ session: WCSession) {
-        phoneReachable = session.isReachable
-        phoneAvailable = session.isCompanionAppInstalled
         if (availabilityChanged != nil) {
             availabilityChanged(session.isCompanionAppInstalled)
-        }
-        if (reachabilityChanged != nil) {
-            reachabilityChanged(session.isReachable)
         }
     }
 
     func sessionReachabilityDidChange(_ session: WCSession) {
-        phoneReachable = session.isReachable
         if (reachabilityChanged != nil) {
             reachabilityChanged(session.isReachable)
         }
@@ -685,8 +677,6 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 	{
 		let session = WCSession.default
 		if (activationState == WCSessionActivationState.activated) {
-            phoneAvailable = true
-            phoneReachable = session.isReachable
 			if (session.isReachable) {
 				printLog("Reachability state: YES")
 			}
@@ -709,8 +699,6 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 			processQueue()
 		}
 		else {
-            phoneAvailable = false
-            phoneReachable = session.isReachable
 			if (activationState == WCSessionActivationState.notActivated) {
 				watchErrorLog("watch session not activated: " + error!.localizedDescription)
 			}
@@ -910,14 +898,16 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 			return
 		}
 		if (session < sessionID) {
-			printLog("didReceiveUserInfo SESSION obsolete userInfo=" + 
-				String(describing: userInfo))
+            printLog("didReceiveUserInfo SESSION obsolete session ID " + String(session) + ", sessionID=" +
+                String(sessionID))
 			return
 		}
-        if (session != sessionID) {
-            printErrorLog("didReceiveUserInfo SESSION invalid session ID " + String(session) + ", userInfo=" +
-                String(describing: userInfo))
-            return
+        if (session > sessionID) {
+            printLog("Session RESET via user info, old session=" + String(sessionID) + " new session=" + String(session))
+            handleReset(session)
+            if (watchResetFunc != nil) {
+                watchResetFunc()
+            }
         }
 		if (ack) {
 			_ = addMessage(msgType: "UPDATEDUSERINFO", msgBody: "\(timestamp)", 
@@ -972,11 +962,18 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 			}
 			return
 		}
-		if (session > sessionID) {
-            printLog("didReceiveApplicationContext SESSION invalid session ID " + String(session) + ", applicationContext=" +
-                String(describing: applicationContext))
+		if (session < sessionID) {
+            printLog("didReceiveApplicationContext SESSION obsolete session ID " + String(session) + ", sessionID=" +
+                String(sessionID))
 			return
 		}
+        if (session > sessionID) {
+            printLog("Session RESET via context, old session=" + String(sessionID) + " new sessionID=" + String(session))
+            handleReset(session)
+            if (watchResetFunc != nil) {
+                watchResetFunc()
+            }
+        }
 		if (ack) {
             _ = addMessage(msgType: "UPDATEDCONTEXT", msgBody: "\(timestamp)",
 				ack: false, hostMessageQueue)
