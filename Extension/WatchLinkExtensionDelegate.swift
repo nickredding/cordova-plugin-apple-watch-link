@@ -630,12 +630,15 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 	}
     
     func sessionCompanionAppInstalledDidChange(_ session: WCSession) {
+        phoneReachable = session.isReachable
         if (availabilityChanged != nil) {
+            phoneAvailable = session.isCompanionAppInstalled
             availabilityChanged(session.isCompanionAppInstalled)
         }
     }
 
     func sessionReachabilityDidChange(_ session: WCSession) {
+        phoneReachable = session.isReachable
         if (reachabilityChanged != nil) {
             reachabilityChanged(session.isReachable)
         }
@@ -676,6 +679,7 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 		activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) 
 	{
 		let session = WCSession.default
+        phoneReachable = session.isReachable
 		if (activationState == WCSessionActivationState.activated) {
 			if (session.isReachable) {
 				printLog("Reachability state: YES")
@@ -689,6 +693,7 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 			}
 			else {
 				printLog("Watch App Inactive")
+                phoneAvailable = false
 				_ = addMessage(msgType: "WATCHAPPINACTIVE", msgBody: [:], ack: false, hostMessageQueue)
 			}
 			watchInitialized = true
@@ -699,6 +704,7 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 			processQueue()
 		}
 		else {
+            phoneAvailable = false
 			if (activationState == WCSessionActivationState.notActivated) {
 				watchErrorLog("watch session not activated: " + error!.localizedDescription)
 			}
