@@ -13,3 +13,7 @@
 
 * Bug fixes.
 * Added complication testing to the test app.
+
+#### 1.0.3
+
+* Bug fixes.
