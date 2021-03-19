@@ -7,7 +7,7 @@
     "id": "cordova-plugin-apple-watch-link",
     "platforms": [
       "ios"
-    ]
+    ] 
   },
   "repository": "github:nickredding/cordova-plugin-apple-watch-link",
   "engines": [
