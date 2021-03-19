@@ -444,6 +444,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 				watchObj.resetCallback(msgQueue.first!.callbackId, msgQueue.first!.timestamp)
 				msgQueue.remove(at: 0)
 			}
+            processing = false
             lock.unlock()
 		}
 		
@@ -454,6 +455,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
                 watchObj.cancelCallback(msgQueue.first!.callbackId)
 				msgQueue.remove(at: 0)
 			}
+            processing = false
             lock.unlock()
 		}
 		
@@ -464,6 +466,9 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 			while (index >= 0) {
 				if (msgQueue[index].msgType == msgType) {
 					watchObj.cancelCallback(msgQueue[index].callbackId)
+                    if (index == 0) {
+                        processing = false
+                    }
 					msgQueue.remove(at: index)
 				}
 				index = index - 1
@@ -477,6 +482,9 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
             lock.lock()
 			var callbackId = ""
 			var removed: Int64 = 0
+            if (!msgQueue.isEmpty && msgQueue.first!.timestamp <= timestamp) {
+                processing = false
+            }
 			while (!msgQueue.isEmpty && msgQueue.first!.timestamp <= timestamp) {
 				if (msgQueue.first!.timestamp == timestamp) {
 					callbackId = msgQueue.first!.callbackId
@@ -487,11 +495,10 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 				}
 				msgQueue.remove(at: 0)
 			}
-			processing = false
             lock.unlock()
 			return (callbackId, removed)
 		}
-		
+        
 		// remove queue items with matching timestamp, ignoring others
 		func clearMatchingTimestamp(timestamp: Int64) -> Bool {
             lock.lock()
@@ -499,6 +506,9 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 			var index = msgQueue.count - 1
 			while (index >= 0) {
 				if (msgQueue[index].timestamp == timestamp) {
+                    if (index == 0) {
+                        processing = false
+                    }
 					didRemove = true
 					watchObj.resetCallback(msgQueue[index].callbackId, msgQueue.first!.timestamp)
 					msgQueue.remove(at: index)
