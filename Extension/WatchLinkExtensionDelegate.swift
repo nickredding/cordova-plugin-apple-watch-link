@@ -807,7 +807,7 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 							//DispatchQueue.main.sync {
                             let handlerResult = (handler.handler(msgType, body) == false)
 							//}
-							if (msgType == handler.msgType || handlerResult == false) {
+							if (handlerResult == false) {
 								break;
 							}
 						}
