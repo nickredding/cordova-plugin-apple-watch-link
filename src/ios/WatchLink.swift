@@ -558,13 +558,21 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
     
 	@objc(resetSession:)
 	func resetSession(command: CDVInvokedUrlCommand) {
+		let session = WCSession.default
 		let reason = command.argument(at: 0) as! String
 		let oldSessionID = sessionID
 		sessionID = Date().currentTimeMillis()
         handleReset()
-        addMessage(msgType: "RESET", msg: reason + ":" + String(oldSessionID), 
-					timestamp: newTimestamp(), ack: true, callbackId: command.callbackId, 
-					watchMessageQueue);
+		if (session.isReachable) {
+			addMessage(msgType: "RESET", msg: reason + ":" + String(oldSessionID), 
+						timestamp: newTimestamp(), ack: true, callbackId: command.callbackId, 
+						watchMessageQueue);
+		}
+		else {
+			let info = ["WATCHLINKSESSIONRESET": reason + ":" + String(oldSessionID)]
+			addMessage(msgType: "USERINFO", msg: info, timestamp: newTimestamp(), 
+				ack: true, callbackId: command.callbackId, watchUserInfoQueue)
+		}
 		if (oldSessionID == 0) {
 			addMessage(msgType: "SETLOGLEVEL", msg: watchLogLevel, timestamp: newTimestamp(), watchMessageQueue)
 			addMessage(msgType: "SETPRINTLOGLEVEL", msg: watchPrintLogLevel, timestamp: newTimestamp(), watchMessageQueue)
