@@ -916,6 +916,10 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 				if (watchResetFunc != nil) {
 					watchResetFunc()
 				}
+                if (ack) {
+                    _ = addMessage(msgType: "UPDATEDUSERINFO", msgBody: "\(timestamp)",
+                        ack: false, hostMessageQueue)
+                }
 				return
 			}
             printLog("Session RESET via user info, old session=" + String(sessionID) + " new session=" + String(session))
