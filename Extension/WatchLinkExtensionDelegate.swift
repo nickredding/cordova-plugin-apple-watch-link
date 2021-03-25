@@ -909,8 +909,16 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 			return
 		}
         if (session > sessionID) {
-            printLog("Session RESET via user info, old session=" + String(sessionID) + " new session=" + String(session))
             handleReset(session)
+			let resetReason = userInfo["WATCHLINKSESSIONRESET"] as? String
+			if resetReason != nil {
+				printLog("Session RESET via user info, reason=" + resetReason! + " new session=" + String(session))
+				if (watchResetFunc != nil) {
+					watchResetFunc()
+				}
+				return
+			}
+            printLog("Session RESET via user info, old session=" + String(sessionID) + " new session=" + String(session))
             if (watchResetFunc != nil) {
                 watchResetFunc()
             }
@@ -919,7 +927,7 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 			_ = addMessage(msgType: "UPDATEDUSERINFO", msgBody: "\(timestamp)", 
 				ack: false, hostMessageQueue)
 		}
-		printLog("Received user info " + String(describing: userInfo) )
+		printLog("Received user info " + String(describing: userInfo))
 		if (watchUserInfoHandler != nil) {
 			watchUserInfoHandler!(timestamp, userInfo)
 		}
