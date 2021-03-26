@@ -17,3 +17,9 @@
 #### 1.0.3
 
 * Bug fixes.
+
+#### 1.0.4
+
+* Bug fixes
+* Send session reset via user information transfer if watch app is in background
+
