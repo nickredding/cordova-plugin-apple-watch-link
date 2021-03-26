@@ -9,17 +9,17 @@
 * Bug fixes.
 * Add direct messaging to test app.
 
-#### 1.0.2
+#### 1.0.2 (March 3, 2021)
 
 * Bug fixes.
 * Added complication testing to the test app.
 
-#### 1.0.3
+#### 1.0.4 (March 20, 2021)
 
 * Bug fixes.
 
-#### 1.0.4
+#### 1.0.5 (March 26, 2021)
 
-* Bug fixes
+* Bug fixes 
 * Send session reset via user information transfer if watch app is in background
 
