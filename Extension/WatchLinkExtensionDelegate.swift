@@ -630,9 +630,14 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 	}
     
     func sessionCompanionAppInstalledDidChange(_ session: WCSession) {
-        phoneReachable = session.isReachable
+        if (phoneReachable != session.isReachable) {
+			phoneReachable = session.isReachable
+			if (reachabilityChanged != nil) {
+				reachabilityChanged(session.isReachable)
+			}
+		}
+        phoneAvailable = session.isCompanionAppInstalled
         if (availabilityChanged != nil) {
-            phoneAvailable = session.isCompanionAppInstalled
             availabilityChanged(session.isCompanionAppInstalled)
         }
     }
@@ -688,6 +693,7 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 				printLog("Reachability state: NO")
 			}
 			if (activationState == WCSessionActivationState.activated) {
+				phoneAvailable = true
 				printLog("Watch App Active")
 				_ = addMessage(msgType: "WATCHAPPACTIVE", msgBody: [:], ack: false, hostMessageQueue)
 			}
@@ -755,7 +761,7 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 			case "SETLOGLEVEL":
 				let level = msgBody as? Int
 				if (level != nil) {
-                    printLog("SETLOGLEVEL \(level!)")
+                    print("SETLOGLEVEL \(level!)")
 					watchLogLevel = level!
 				}
 				else {
@@ -765,7 +771,7 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 			case "SETPRINTLOGLEVEL":
 				let level = msgBody as? Int
 				if (level != nil) {
-                    printLog("SETPRINTLOGLEVEL \(level!)")
+                    print("SETPRINTLOGLEVEL \(level!)")
 					watchPrintLogLevel = level!
 				}
 				else {
@@ -908,10 +914,10 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
                 String(sessionID))
 			return
 		}
+        let resetReason = userInfo["WATCHLINKSESSIONRESET"] as? String
         if (session > sessionID) {
             handleReset(session)
-			let resetReason = userInfo["WATCHLINKSESSIONRESET"] as? String
-			if resetReason != nil {
+			if (resetReason != nil) {
 				printLog("Session RESET via user info, reason=" + resetReason! + " new session=" + String(session))
 				if (watchResetFunc != nil) {
 					watchResetFunc()
@@ -931,6 +937,9 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 			_ = addMessage(msgType: "UPDATEDUSERINFO", msgBody: "\(timestamp)", 
 				ack: false, hostMessageQueue)
 		}
+        if (resetReason != nil) {
+            return
+        }
 		printLog("Received user info " + String(describing: userInfo))
 		if (watchUserInfoHandler != nil) {
 			watchUserInfoHandler!(timestamp, userInfo)
