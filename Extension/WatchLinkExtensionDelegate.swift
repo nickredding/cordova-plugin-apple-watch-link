@@ -176,7 +176,7 @@ func updateUserInfoToPhone(_ userInfo: [String: Any], ack: Bool = false,
 	errHandler: (@escaping (String) -> Void) = nullHandler) -> Int64 
 {
 	if (watchObj == nil || !watchInitialized || !watchInitialized) {
-		print("updateUserInfoToPhone watchObj is not ready, userInfo=" + String(describing:userInfo))
+		printLog("updateUserInfoToPhone watchObj is not ready, userInfo=" + String(describing:userInfo))
 		return 0
 	}
 	if (userInfo["ACK"] != nil || userInfo["TIMESTAMP"] != nil) {
@@ -193,7 +193,7 @@ func updateContextToPhone(_ context: [String: Any], ack: Bool = false,
 	errHandler: (@escaping (String) -> Void) = nullHandler) -> Int64 
 {
 	if (watchObj == nil || !watchInitialized) {
-		print("updateContextToPhone watchObj is not ready, context=" + String(describing:context));
+		printLog("updateContextToPhone watchObj is not ready, context=" + String(describing:context));
 		return 0
 	}
 	if (context["ACK"] != nil || context["TIMESTAMP"] != nil) {
@@ -206,11 +206,11 @@ func updateContextToPhone(_ context: [String: Any], ack: Bool = false,
 }
 
 private func logDefaultDataMessage(_:Data) -> Void {
-	print("Data message handler not bound")
+	printLog("Data message handler not bound")
 }
 
 private func logDefaultMessage(_ msgType: String, _ msgBody: Any) -> Void {
-	print("Message default handler not bound " + msgType + ": " + String(describing: msgBody))
+    printLog("Message default handler not bound " + msgType + ": " + String(describing: msgBody))
 }
 
 var watchLogLevel = 3
