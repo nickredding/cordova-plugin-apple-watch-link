@@ -761,7 +761,10 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 			case "SETLOGLEVEL":
 				let level = msgBody as? Int
 				if (level != nil) {
-                    print("SETLOGLEVEL \(level!)")
+                    let printLevel = watchPrintLogLevel
+                    watchPrintLogLevel = 3
+                    printLog("SETLOGLEVEL \(level!)")
+                    watchPrintLogLevel = printLevel
 					watchLogLevel = level!
 				}
 				else {
@@ -771,7 +774,8 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 			case "SETPRINTLOGLEVEL":
 				let level = msgBody as? Int
 				if (level != nil) {
-                    print("SETPRINTLOGLEVEL \(level!)")
+                    watchPrintLogLevel = 3
+                    printLog("SETPRINTLOGLEVEL \(level!)")
 					watchPrintLogLevel = level!
 				}
 				else {
