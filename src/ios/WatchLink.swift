@@ -573,10 +573,8 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 			addMessage(msgType: "USERINFO", msg: info, timestamp: newTimestamp(), 
 				ack: true, callbackId: command.callbackId, watchUserInfoQueue)
 		}
-		if (oldSessionID == 0) {
-			addMessage(msgType: "SETLOGLEVEL", msg: watchLogLevel, timestamp: newTimestamp(), watchMessageQueue)
-			addMessage(msgType: "SETPRINTLOGLEVEL", msg: watchPrintLogLevel, timestamp: newTimestamp(), watchMessageQueue)
-		}
+		addMessage(msgType: "SETLOGLEVEL", msg: watchLogLevel, timestamp: newTimestamp(), watchMessageQueue)
+		addMessage(msgType: "SETPRINTLOGLEVEL", msg: watchPrintLogLevel, timestamp: newTimestamp(), watchMessageQueue)
 		sendLog("resetSession requested \(oldSessionID) => \(sessionID)")
 	}
 	
