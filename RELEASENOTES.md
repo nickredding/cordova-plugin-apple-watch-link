@@ -23,3 +23,7 @@
 * Bug fixes 
 * Send session reset via user information transfer if watch app is in background
 
+#### 1.0.6 (March 27, 2021)
+
+* Bug fixes 
+
