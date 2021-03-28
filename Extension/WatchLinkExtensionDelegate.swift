@@ -78,13 +78,13 @@ func watchReset(_ f: @escaping (() -> Void)) {
 var phoneAvailable = false
 var phoneReachable = false
 
-var availabilityChanged: ((Bool) -> Void)!
-var reachabilityChanged: ((Bool) -> Void)!
+var availabilityChanged: ((Bool, String) -> Void)!
+var reachabilityChanged: ((Bool, String) -> Void)!
 
-func bindAvailabilityHandler(_ handler: @escaping ((Bool) -> Void)) {
+func bindAvailabilityHandler(_ handler: @escaping ((Bool, String) -> Void)) {
     availabilityChanged = handler
 }
-func bindReachabilityHandler(_ handler: @escaping ((Bool) -> Void)) {
+func bindReachabilityHandler(_ handler: @escaping ((Bool, String) -> Void)) {
     reachabilityChanged = handler
 }
 
@@ -633,19 +633,19 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
         if (phoneReachable != session.isReachable) {
 			phoneReachable = session.isReachable
 			if (reachabilityChanged != nil) {
-				reachabilityChanged(session.isReachable)
+				reachabilityChanged(session.isReachable, "companion")
 			}
 		}
         phoneAvailable = session.isCompanionAppInstalled
         if (availabilityChanged != nil) {
-            availabilityChanged(session.isCompanionAppInstalled)
+            availabilityChanged(session.isCompanionAppInstalled, "companion")
         }
     }
 
     func sessionReachabilityDidChange(_ session: WCSession) {
         phoneReachable = session.isReachable
         if (reachabilityChanged != nil) {
-            reachabilityChanged(session.isReachable)
+            reachabilityChanged(session.isReachable, "reachability")
         }
     }
 
