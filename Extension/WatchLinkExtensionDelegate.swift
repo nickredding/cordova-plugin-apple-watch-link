@@ -81,10 +81,10 @@ var phoneReachable = false
 var availabilityChanged: ((Bool) -> Void)!
 var reachabilityChanged: ((Bool) -> Void)!
 
-func bindAvailabilityHandler(_ handler: @escaping ((Bool, String) -> Void)) {
+func bindAvailabilityHandler(_ handler: @escaping ((Bool) -> Void)) {
     availabilityChanged = handler
 }
-func bindReachabilityHandler(_ handler: @escaping ((Bool, String) -> Void)) {
+func bindReachabilityHandler(_ handler: @escaping ((Bool) -> Void)) {
     reachabilityChanged = handler
 }
 
