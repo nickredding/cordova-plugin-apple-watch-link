@@ -559,8 +559,15 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 	@objc(resetSession:)
 	func resetSession(command: CDVInvokedUrlCommand) {
 		let reachable = WCSession.default.isReachable
+        let available = watchActivated && watchPaired && watchInstalled
 		let reason = command.argument(at: 0) as! String
 		let oldSessionID = sessionID
+        if (!available) {
+            let result = CDVPluginResult(status: CDVCommandStatus_ERROR,
+                messageAs: "watch not available")
+            self.commandDelegate.send(result, callbackId: command.callbackId)
+            return
+        }
 		sessionID = Date().currentTimeMillis()
         handleReset()
 		if (reachable) {
@@ -573,8 +580,8 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 			addMessage(msgType: "USERINFO", msg: info, timestamp: newTimestamp(), 
 				ack: true, callbackId: command.callbackId, watchUserInfoQueue)
 		}
-		addMessage(msgType: "SETLOGLEVEL", msg: watchLogLevel, timestamp: newTimestamp(), watchMessageQueue)
-		addMessage(msgType: "SETPRINTLOGLEVEL", msg: watchPrintLogLevel, timestamp: newTimestamp(), watchMessageQueue)
+        addMessage(msgType: "SETLOGLEVEL", msg: watchLogLevel, timestamp: newTimestamp(), watchMessageQueue)
+        addMessage(msgType: "SETPRINTLOGLEVEL", msg: watchPrintLogLevel, timestamp: newTimestamp(), watchMessageQueue)
 		sendLog("resetSession requested \(oldSessionID) => \(sessionID)")
 	}
 	
@@ -708,6 +715,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 						watchMessageQueue.processing = true
 						break
 					}
+                    sendLog("processQueue removing message " + String(nextMsg.timestamp))
 					watchMessageQueue.msgQueue.remove(at: 0)
 				}
 				else {
@@ -798,7 +806,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 	
 	// add messages to the queues
 	private func addMessage(msgType: String, msg: Any, timestamp: Int64, 
-			ack: Bool = false, callbackId: String = "", 
+			ack: Bool = false, callbackId: String = "",
 			_ queue: MessageQueue)
 	{
 		queue.enqueue(msgType: msgType, msg: msg, timestamp: timestamp, 
