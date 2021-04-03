@@ -423,8 +423,8 @@ function watchLink() {
     */
     _watchLink.resetSession = function(completion, reason) {
         reason = reason || 'resetSession';
-        if (!_watchLink.initialized || _watchLink.available !== true) {
-            _watchLink.errorLog('watchLink.resetSession ignored: watch session not ' + (_watchLink.initialized ? 'available' : 'initialized'));
+        if (!_watchLink.initialized) {
+            _watchLink.errorLog('watchLink.resetSession ignored: watch session not initialized');
             if (completion) {
                 completion('uninitialized');
             }
@@ -437,10 +437,9 @@ function watchLink() {
                 }
             }, 
             function(msg) {
-            if (!/^sessionreset/.test(msg)) {
-                _watchLink.errorLog('Session RESET failed (will retry)--' + msg);
-                _watchLink.resetSession();
-            }
+                if (!/^sessionreset/.test(msg)) {
+                    _watchLink.errorLog('watchLink.resetSession failed: ' + msg);
+                }
             }, 
             'WatchLink', 'resetSession', [reason]);
     };
