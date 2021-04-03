@@ -2296,7 +2296,7 @@ function watchLink() {
             cordova.exec(
                 function(availability) {
                     _watchLink.available = availability;
-                    //_watchLink.log('availability: ' + state);
+                    _watchLink.log('availabilityChanged: ' + availability);
                     if (availabilityChangedCallback && availability !== 'uninitialized') {
                         availabilityChangedCallback(availability);
                     }
@@ -2305,7 +2305,7 @@ function watchLink() {
             cordova.exec(
                 function(reachable) {
                     _watchLink.reachable = reachable;
-                    //_watchLink.log('reachability: ' + reachable);
+                    _watchLink.log('reachabilityChanged: ' + reachable);
                     if (reachabilityChangedCallback && reachable !== 'uninitialized') {
                         reachabilityChangedCallback(reachable);
                     }
@@ -2314,7 +2314,7 @@ function watchLink() {
             cordova.exec(
                 function(state) {
                     _watchLink.applicationState = state;
-                    //_watchLink.log('applicationState: ' + JSON.stringify(state));
+                    _watchLink.log('applicationStateChanged: ' + JSON.stringify(state));
                     if (applicationStateChangedCallback && state !== 'uninitialized') {
                         applicationStateChangedCallback(_watchLink.applicationState);
                     }
