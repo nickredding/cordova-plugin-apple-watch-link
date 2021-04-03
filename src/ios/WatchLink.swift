@@ -680,10 +680,10 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 	private func processQueue() {
 		let session = WCSession.default
 		if (session.isReachable) {
+            watchMessageQueue.lock.lock()
 			while (session.isReachable && !watchMessageQueue.msgQueue.isEmpty &&
 					!watchMessageQueue.processing) 
 			{
-                watchMessageQueue.lock.lock()
 				let nextMsg = watchMessageQueue.msgQueue.first!
 				if (nextMsg.session == sessionID) {
 					let timestamp = nextMsg.timestamp
