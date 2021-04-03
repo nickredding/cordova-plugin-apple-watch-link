@@ -798,7 +798,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 	
 	// add messages to the queues
 	private func addMessage(msgType: String, msg: Any, timestamp: Int64, 
-			ack: Bool = true, callbackId: String = "", 
+			ack: Bool = false, callbackId: String = "", 
 			_ queue: MessageQueue)
 	{
 		queue.enqueue(msgType: msgType, msg: msg, timestamp: timestamp, 
