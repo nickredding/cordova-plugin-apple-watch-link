@@ -47,6 +47,20 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
                     " watchPrintLogLevel = " + String(watchPrintLogLevel))
         watchSystemMessages = "WATCHAPPACTIVE|WATCHINAPPACTIVE|WATCHAPPBACKGROUND|WATCHLOG|WATCHAPPLOG|WATCHERRORLOG"
 	}
+    var cordovaSuspended = false
+    
+    @objc(suspendCallbacks:)
+    func suspendCallbacks(command: CDVInvokedUrlCommand) {
+        print(Date().timeOfDay() + ">> Cordova callbacks SUSPENDED")
+        cordovaSuspended = true
+    }
+    
+    func cordovaCallback(_ result: CDVPluginResult!, callbackId: String!) {
+        if (cordovaSuspended) {
+            return
+        }
+        self.commandDelegate.send(result, callbackId: callbackId)
+    }
 	
 	// session startup
 	func startSession() {
@@ -67,10 +81,11 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 	
 	@objc(initializationComplete:)
 	private func initializationComplete(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		initializationCallbackId = command.callbackId
 		if (initialized) {
 			let result = CDVPluginResult(status: CDVCommandStatus_OK)
-			self.commandDelegate.send(result, callbackId: initializationCallbackId)
+			cordovaCallback(result, callbackId: initializationCallbackId)
 		}
 	}
 	
@@ -139,16 +154,18 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		if (keepCallback) {
 			result!.setKeepCallbackAs(true)
 		}
-		self.commandDelegate.send(result, callbackId: callback)
+		cordovaCallback(result, callbackId: callback)
 	}
 	
 	@objc(availability:)
 	func availability(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		notifyAvailability(callbackId: command.callbackId, keepCallback: false)
 	}
 
 	@objc(availabilityChanged:)
 	func availabilityChanged(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		if (availabilityCallbackId != command.callbackId) {
 			if (availabilityCallbackId != nil) {
                 cancelCallback(availabilityCallbackId)
@@ -186,7 +203,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		if (keepCallback) {
 			result!.setKeepCallbackAs(true)
 		}
-		self.commandDelegate.send(result, callbackId: callback)
+		cordovaCallback(result, callbackId: callback)
 		if (isReachable) {
 			processQueue()
 		}
@@ -194,11 +211,13 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 	
 	@objc(reachability:)
 	func reachability(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		notifyReachability(callbackId: command.callbackId, keepCallback: false)
 	}
 
 	@objc(reachabilityChanged:)
 	func reachabilityChanged(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		if (reachabilityCallbackId != command.callbackId) {
 			if (reachabilityCallbackId != nil) {
 				cancelCallback(reachabilityCallbackId)
@@ -251,16 +270,18 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		if (keepCallback) {
 			result!.setKeepCallbackAs(true)
 		}
-		self.commandDelegate.send(result, callbackId: callback)
+		cordovaCallback(result, callbackId: callback)
 	}
 	
 	@objc(watchApplicationState:)
 	func watchApplicationState(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		notifyApplicationState(callbackId: command.callbackId, keepCallback: false)
 	}
 
 	@objc(applicationStateChanged:)
 	func applicationStateChanged(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		if (applicationStateCallbackId != command.callbackId) {
 			if (applicationStateCallbackId != nil) {
 				cancelCallback(applicationStateCallbackId)
@@ -297,7 +318,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 			notifyReachability()
 			if (initializationCallbackId != nil) {
 				let result = CDVPluginResult(status: CDVCommandStatus_OK)
-				self.commandDelegate.send(result, callbackId: initializationCallbackId)
+				cordovaCallback(result, callbackId: initializationCallbackId)
 			}
 		}
 		else {
@@ -369,7 +390,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		if (callbackID != "") {
 			let result = CDVPluginResult(status: CDVCommandStatus_ERROR, 
 				messageAs: "sessionreset:" + String(timestamp))
-			self.commandDelegate.send(result, callbackId: callbackID)
+			cordovaCallback(result, callbackId: callbackID)
 		}
 	}
 	
@@ -378,19 +399,20 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 	
 	@objc(registerCancelCallbackId:)
 	func registerCancelCallbackId(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		if (cancelCallbackId != command.callbackId) {
 			cancelCallbackId = command.callbackId
 		}
 		let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "")
 		result!.setKeepCallbackAs(true)
-		self.commandDelegate.send(result, callbackId: cancelCallbackId)
+		cordovaCallback(result, callbackId: cancelCallbackId)
 	}
 	
 	private func cancelCallback(_ callbackId: String) {
 		if (cancelCallbackId != nil && callbackId != "") {
 			let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: callbackId)
 			result!.setKeepCallbackAs(true)
-			self.commandDelegate.send(result, callbackId: cancelCallbackId)
+			cordovaCallback(result, callbackId: cancelCallbackId)
 		}
 	}
 
@@ -558,6 +580,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
     
 	@objc(resetSession:)
 	func resetSession(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		let reachable = WCSession.default.isReachable
         let available = watchActivated && watchPaired && watchInstalled
 		let reason = command.argument(at: 0) as! String
@@ -565,7 +588,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
         if (!available) {
             let result = CDVPluginResult(status: CDVCommandStatus_ERROR,
                 messageAs: "watch not available")
-            self.commandDelegate.send(result, callbackId: command.callbackId)
+            cordovaCallback(result, callbackId: command.callbackId)
             return
         }
 		sessionID = Date().currentTimeMillis()
@@ -603,7 +626,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		sendLog("Acknowledged \(timestamp) queue=" + String(describing: watchMessageQueue.msgQueue))
 		if (callbackId != "") {
             let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: String(timestamp))
-			self.commandDelegate.send(result, callbackId: callbackId)
+			cordovaCallback(result, callbackId: callbackId)
 		}
 		processQueue()
 	}
@@ -630,7 +653,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 					if (callbackId != "" && removed == timestamp) {
 						let result = CDVPluginResult(status: CDVCommandStatus_ERROR, 
 							messageAs: response.localizedDescription + ":" + String(timestamp))
-						self.commandDelegate.send(result, callbackId: callbackId)
+						cordovaCallback(result, callbackId: callbackId)
 					}
 				}
 			}
@@ -677,7 +700,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		}
 		else {
 			let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: status)
-			self.commandDelegate.send(result, callbackId: pendingContextUpdate.callbackId)
+			cordovaCallback(result, callbackId: pendingContextUpdate.callbackId)
 			pendingContextUpdate = nil
 		}
 	}
@@ -820,24 +843,26 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 	// messaging
 	@objc(registerReceiveMessage:)
 	func registerReceiveMessage(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		if (receivedMessageCallbackId != nil) {
 			cancelCallback(receivedMessageCallbackId)
 		}
 		receivedMessageCallbackId = command.callbackId
 		let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "registered")
 		result!.setKeepCallbackAs(true)
-		self.commandDelegate.send(result, callbackId: receivedMessageCallbackId)
+		cordovaCallback(result, callbackId: receivedMessageCallbackId)
 	}
 	
 	@objc(registerReceiveDataMessage:)
 	func registerReceiveDataMessage(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		if (receivedDataMessageCallbackId != nil) {
 			cancelCallback(receivedDataMessageCallbackId)
 		}
 		receivedDataMessageCallbackId = command.callbackId
 		let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "registered")
 		result!.setKeepCallbackAs(true)
-		self.commandDelegate.send(result, callbackId: receivedDataMessageCallbackId)
+		cordovaCallback(result, callbackId: receivedDataMessageCallbackId)
 	}
 	
     func handleMessage(msgType: String, msgBody: Any, timestamp: Int64) {
@@ -857,7 +882,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 							messageAs: String(pendingContextUpdate.timestamp))
 						sendLog("Acknowledged UPDATEDCONTEXT \(ackedTimestamp!) callbackId=" +
 							pendingContextUpdate.callbackId)
-						self.commandDelegate.send(result, 
+						cordovaCallback(result,
 							callbackId: pendingContextUpdate.callbackId)
 						pendingContextUpdate = nil
 					}
@@ -881,7 +906,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 					if (callbackId != "") {
 						let result = CDVPluginResult(status: CDVCommandStatus_OK, 
 							messageAs: String(timestamp))
-						self.commandDelegate.send(result, callbackId: callbackId)
+						cordovaCallback(result, callbackId: callbackId)
 					}
 				}
 				processQueue()
@@ -920,7 +945,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
                     let msgData = msgBody as! Data
                     let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAsArrayBuffer: msgData)
 					result!.setKeepCallbackAs(true)
-					self.commandDelegate.send(result, 
+					cordovaCallback(result,
 						callbackId: receivedDataMessageCallbackId)
 				}
 				else {
@@ -931,7 +956,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 					let result = CDVPluginResult(status: CDVCommandStatus_OK, 
                                                  messageAs: ["msgType": msgType, "msg": msgBody as Any, "TIMESTAMP": timestamp])
 					result!.setKeepCallbackAs(true)
-					self.commandDelegate.send(result, callbackId: receivedMessageCallbackId)
+					cordovaCallback(result, callbackId: receivedMessageCallbackId)
 				}
 				else {
 					sendLog("didReceiveMessage handler not bound: msg = " +
@@ -948,7 +973,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 			let result = CDVPluginResult(status: CDVCommandStatus_OK, 
 				messageAs: ["msgType": "WCSESSION", "msg": message])
 			result!.setKeepCallbackAs(true)
-			self.commandDelegate.send(result, callbackId: receivedMessageCallbackId)
+			cordovaCallback(result, callbackId: receivedMessageCallbackId)
 		}
 		else {
 			sendErrorLog("didReceiveDirectMessage not bound")
@@ -960,7 +985,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 			let result = CDVPluginResult(status: CDVCommandStatus_OK, 
 				messageAs: ["msgType": "WCSESSION", "msg": message])
 			result!.setKeepCallbackAs(true)
-			self.commandDelegate.send(result, callbackId: receivedMessageCallbackId)
+			cordovaCallback(result, callbackId: receivedMessageCallbackId)
 		}
 		else {
 			sendErrorLog("didReceiveDirectMessage not bound")
@@ -1074,7 +1099,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		if (receivedDataMessageCallbackId != nil) {
 			let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAsArrayBuffer: message)
 			result!.setKeepCallbackAs(true)
-			self.commandDelegate.send(result, callbackId: receivedDataMessageCallbackId)
+			cordovaCallback(result, callbackId: receivedDataMessageCallbackId)
 			sendLog("didReceiveDirectDataMessage")
 		}
 		else {
@@ -1086,7 +1111,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		if (receivedDataMessageCallbackId != nil) {
 			let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAsArrayBuffer: message)
 			result!.setKeepCallbackAs(true)
-			self.commandDelegate.send(result, callbackId: receivedDataMessageCallbackId)
+			cordovaCallback(result, callbackId: receivedDataMessageCallbackId)
 			sendLog("didReceiveDirectDataMessageNoAck")
 		}
 		else {
@@ -1096,6 +1121,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 
 	@objc(sendMessage:)
 	func sendMessage(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		let msgType = command.argument(at: 0) as! String
         let msgBody = command.argument(at: 1) as! [String: Any]
 		let timestamp = msgBody["TIMESTAMP"] as! Int64
@@ -1105,29 +1131,32 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 
 	@objc(sendMessageNoAck:)
 	func sendMessageNoAck(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		let msgType = command.argument(at: 0) as! String
 		let msgBody = command.argument(at: 1) as! [String: Any]
 		let timestamp = msgBody["TIMESTAMP"] as! Int64
 		addMessage(msgType: msgType, msg: msgBody, timestamp: timestamp,
 			ack: false, callbackId: command.callbackId, watchMessageQueue)
 		let result = CDVPluginResult(status: CDVCommandStatus_OK)
-		self.commandDelegate.send(result, callbackId: command.callbackId)
+		cordovaCallback(result, callbackId: command.callbackId)
 	}
 
 	@objc(flushMessages:)
 	func flushMessages(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		watchMessageQueue.flushQueue()
 		let result = CDVPluginResult(status: CDVCommandStatus_OK)
-		self.commandDelegate.send(result, callbackId: command.callbackId)
+		cordovaCallback(result, callbackId: command.callbackId)
 	}
 
 	@objc(sendDataMessage:)
 	func sendDataMessage(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
         guard let msgData = command.argument(at: 0) as? Data
         else {
             sendErrorLog("payload data error")
             let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "payloaderror")
-            self.commandDelegate.send(result, callbackId: command.callbackId)
+            cordovaCallback(result, callbackId: command.callbackId)
             return
         }
 		let timestamp = newTimestamp()
@@ -1137,44 +1166,47 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 
 	@objc(sendDataMessageNoAck:)
 	func sendDataMessageNoAck(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
         guard let msgData = command.argument(at: 0) as? Data
         else {
             sendErrorLog("payload data error")
             let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "payloaderror")
-            self.commandDelegate.send(result, callbackId: command.callbackId)
+            cordovaCallback(result, callbackId: command.callbackId)
             return
         }
 		let timestamp = newTimestamp()
 		addMessage(msgType: "DATA", msg: msgData, timestamp: timestamp,
 			ack: false, callbackId: command.callbackId, watchDataMessageQueue)
 		let result = CDVPluginResult(status: CDVCommandStatus_OK)
-		self.commandDelegate.send(result, callbackId: command.callbackId)
+		cordovaCallback(result, callbackId: command.callbackId)
 	}
 
 	@objc(flushDataMessages:)
 	func flushDataMessages(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		watchDataMessageQueue.flushQueue()
 		let result = CDVPluginResult(status: CDVCommandStatus_OK)
-		self.commandDelegate.send(result, callbackId: command.callbackId)
+		cordovaCallback(result, callbackId: command.callbackId)
 	}
 
 	// user info send/receieve
 	@objc(registerReceiveUserInfo:)
 	func registerReceiveUserInfo(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		if (receivedUserInfoCallbackId != nil) {
 			cancelCallback(receivedUserInfoCallbackId)
 		}
 		receivedUserInfoCallbackId = command.callbackId
 		let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "registered")
 		result!.setKeepCallbackAs(true)
-		self.commandDelegate.send(result, callbackId: receivedUserInfoCallbackId)
+		cordovaCallback(result, callbackId: receivedUserInfoCallbackId)
 	}
 	
 	private func handleDirectUserInfo(_ userInfo: [String: Any]) {
 		if (receivedUserInfoCallbackId != nil) {
 			let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: userInfo)
 			result!.setKeepCallbackAs(true)
-			self.commandDelegate.send(result, callbackId: receivedUserInfoCallbackId)
+			cordovaCallback(result, callbackId: receivedUserInfoCallbackId)
 		}
 		else {
 			sendErrorLog("handleDirectUserInfo not bound: userInfo = " +
@@ -1216,7 +1248,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		if (receivedUserInfoCallbackId != nil) {
 			let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: userInfo)
 			result!.setKeepCallbackAs(true)
-			self.commandDelegate.send(result, callbackId: receivedUserInfoCallbackId)
+			cordovaCallback(result, callbackId: receivedUserInfoCallbackId)
 			sendLog("didReceiveUserInfo callback executed");
 		}
 		else {
@@ -1227,6 +1259,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 
 	@objc(sendUserInfo:)
 	func sendUserInfo(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		let info = command.argument(at: 0) as! [String: Any]
         let timestamp = info["TIMESTAMP"] as! Int64
 		addMessage(msgType: "USERINFO", msg: info, timestamp: timestamp, 
@@ -1235,21 +1268,23 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 
 	@objc(sendUserInfoNoAck:)
 	func sendUserInfoNoAck(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		let info = command.argument(at: 0) as! [String: Any]
         let timestamp = info["TIMESTAMP"] as! Int64
 		addMessage(msgType: "USERINFO", msg: info, timestamp: timestamp, 
 			ack: false, callbackId: command.callbackId, watchUserInfoQueue)
 		let result = CDVPluginResult(status: CDVCommandStatus_OK)
-		self.commandDelegate.send(result, callbackId: command.callbackId)
+		cordovaCallback(result, callbackId: command.callbackId)
 	}
 	
 	@objc(queryUserInfo:)
 	func queryUserInfo(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		let timestamp = command.argument(at: 0) as! Int64
 		var result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: false)
 		guard let transfer = userInfoTransfers[timestamp] 
 		else {
-			self.commandDelegate.send(result, callbackId: command.callbackId)
+			cordovaCallback(result, callbackId: command.callbackId)
 			return
 		}
         let info: [String : Any] = [ "timestamp" : timestamp, 
@@ -1257,16 +1292,17 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 			"transmitComplete" : !transfer.isTransferring, 
 			"userInfo": transfer.userInfo ]
 		result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: info)
-		self.commandDelegate.send(result, callbackId: command.callbackId)
+		cordovaCallback(result, callbackId: command.callbackId)
 	}
 	
 	@objc(cancelUserInfo:)
 	func cancelUserInfo(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		let timestamp = command.argument(at: 0) as! Int64
 		var result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: false)
 		guard let transfer = userInfoTransfers[timestamp] 
 		else {
-			self.commandDelegate.send(result, callbackId: command.callbackId)
+			cordovaCallback(result, callbackId: command.callbackId)
 			return
 		}
 		if (transfer.isTransferring) {
@@ -1275,11 +1311,12 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 			result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: true)
 		}
         userInfoTransfers.removeValue(forKey: timestamp)
-		self.commandDelegate.send(result, callbackId: command.callbackId)
+		cordovaCallback(result, callbackId: command.callbackId)
 	}
 	
 	@objc(outstandingUserInfoTransfers:)
 	func outstandingUserInfoTransfers(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
         var transfers: [ [String: Any] ] = []
 		for (timestamp, infoTransfer) in userInfoTransfers {
 			if (!infoTransfer.isCurrentComplicationInfo) {
@@ -1293,11 +1330,12 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 			}
 		}
 		let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: transfers)
-		self.commandDelegate.send(result, callbackId: command.callbackId)
+		cordovaCallback(result, callbackId: command.callbackId)
 	}
 	
 	@objc(flushUserInfo:)
 	func flushUserInfo(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		for (_, infoTransfer) in userInfoTransfers {
 			if (infoTransfer.isTransferring) {
                 infoTransfer.cancel()
@@ -1305,26 +1343,27 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		}
 		watchUserInfoQueue.flushQueue()
 		let result = CDVPluginResult(status: CDVCommandStatus_OK)
-		self.commandDelegate.send(result, callbackId: command.callbackId)
+		cordovaCallback(result, callbackId: command.callbackId)
 	}
 
 	// application context send/receieve
 	@objc(registerReceiveContext:)
 	func registerReceiveContext(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		if (receivedContextCallbackId != nil) {
 			cancelCallback(receivedContextCallbackId)
 		}
 		receivedContextCallbackId = command.callbackId
 		let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "registered")
 		result!.setKeepCallbackAs(true)
-		self.commandDelegate.send(result, callbackId: receivedContextCallbackId)
+		cordovaCallback(result, callbackId: receivedContextCallbackId)
 	}
 	
 	private func handleDirectContext(_ context: [String: Any]) {
 		if (receivedContextCallbackId != nil) {
 			let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: context)
 			result!.setKeepCallbackAs(true)
-			self.commandDelegate.send(result, callbackId: receivedContextCallbackId)
+			cordovaCallback(result, callbackId: receivedContextCallbackId)
 		}
 		else {
 			sendErrorLog("handleDirectContext not bound: userInfo = " +
@@ -1369,7 +1408,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 			let result = CDVPluginResult(status: CDVCommandStatus_OK, 
 				messageAs: applicationContext)
 			result!.setKeepCallbackAs(true)
-			self.commandDelegate.send(result, callbackId: receivedContextCallbackId)
+			cordovaCallback(result, callbackId: receivedContextCallbackId)
 		}
 		else {
 			sendErrorLog("didReceiveApplicationContext not bound: applicationContext = " + 
@@ -1379,10 +1418,11 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 
 	@objc(sendContext:)
 	func sendContext(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		if (pendingContextUpdate != nil) {
 			let result = CDVPluginResult(status: CDVCommandStatus_ERROR, 
 				messageAs: "reset:" + String(pendingContextUpdate.timestamp))
-			self.commandDelegate.send(result, callbackId: pendingContextUpdate.callbackId)
+			cordovaCallback(result, callbackId: pendingContextUpdate.callbackId)
 		}
 		let context = command.argument(at: 0) as! [String: Any]
 		let timestamp = context["TIMESTAMP"] as! Int64
@@ -1393,10 +1433,11 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 
 	@objc(sendContextNoAck:)
 	func sendContextNoAck(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		if (pendingContextUpdate != nil) {
 			let result = CDVPluginResult(status: CDVCommandStatus_ERROR, 
 				messageAs: "reset:" + String(pendingContextUpdate.timestamp))
-			self.commandDelegate.send(result, callbackId: pendingContextUpdate.callbackId)
+			cordovaCallback(result, callbackId: pendingContextUpdate.callbackId)
 		}
 		let context = command.argument(at: 0) as! [String: Any]
 		let timestamp = context["TIMESTAMP"] as! Int64
@@ -1404,39 +1445,43 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 			ack: false, sent: false, callbackId: command.callbackId, context: context)
 		dispatchContext()
 		let result = CDVPluginResult(status: CDVCommandStatus_OK)
-		self.commandDelegate.send(result, callbackId: command.callbackId)
+		cordovaCallback(result, callbackId: command.callbackId)
 	}
 	
 	@objc(latestContextSent:)
 	func latestContextSent(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		let session = WCSession.default
 		let result = CDVPluginResult(status: CDVCommandStatus_OK, 
 			messageAs: session.applicationContext)
-		self.commandDelegate.send(result, callbackId: command.callbackId)
+		cordovaCallback(result, callbackId: command.callbackId)
 	}
 	
 	@objc(latestContextReceived:)
 	func latestContextReceived(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		let session = WCSession.default
 		let result = CDVPluginResult(status: CDVCommandStatus_OK, 
 			messageAs: session.receivedApplicationContext)
-		self.commandDelegate.send(result, callbackId: command.callbackId)
+		cordovaCallback(result, callbackId: command.callbackId)
 	}
 	
 	@objc(flushContextTransfers:)
 	func flushContextTransfers(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		if (pendingContextUpdate != nil) {
 			cancelCallback(pendingContextUpdate.callbackId)
 		}
 		pendingContextUpdate = nil
 		let result = CDVPluginResult(status: CDVCommandStatus_OK)
-		self.commandDelegate.send(result, callbackId: command.callbackId)
+		cordovaCallback(result, callbackId: command.callbackId)
 	}
 	
 	// complications
 	
 	@objc(sendComplicationInfo:)
 	func sendComplicationInfo(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
         let session = WCSession.default
 		let info = command.argument(at: 0) as! [String: Any]
 		let timestamp = info["TIMESTAMP"] as! Int64
@@ -1445,11 +1490,12 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 	
 	@objc(queryComplication:)
 	func queryComplication(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		let timestamp = command.argument(at: 0) as! Int64
 		var result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: false)
 		guard let transfer = userInfoTransfers[timestamp] 
 		else {
-			self.commandDelegate.send(result, callbackId: command.callbackId)
+			cordovaCallback(result, callbackId: command.callbackId)
 			return
 		}
         let info: [String : Any] = [ "timestamp" : timestamp, 
@@ -1457,16 +1503,17 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 			"transmitComplete" : !transfer.isTransferring, 
 			"userInfo": transfer.userInfo ]
 		result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: info)
-		self.commandDelegate.send(result, callbackId: command.callbackId)
+		cordovaCallback(result, callbackId: command.callbackId)
 	}
 	
 	@objc(cancelComplication:)
 	func cancelComplication(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		let timestamp = command.argument(at: 0) as! Int64
 		var result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: false)
 		guard let transfer = userInfoTransfers[timestamp] 
 		else {
-			self.commandDelegate.send(result, callbackId: command.callbackId)
+			cordovaCallback(result, callbackId: command.callbackId)
 			return
 		}
 		if (transfer.isTransferring) {
@@ -1475,11 +1522,12 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 			result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: true)
 		}
         userInfoTransfers.removeValue(forKey: timestamp)
-		self.commandDelegate.send(result, callbackId: command.callbackId)
+		cordovaCallback(result, callbackId: command.callbackId)
 	}
 	
 	@objc(outstandingComplicationTransfers:)
 	func outstandingComplicationTransfers(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
         var transfers: [ [String: Any] ] = []
 		for (timestamp, infoTransfer) in userInfoTransfers {
 			if (infoTransfer.isCurrentComplicationInfo) {
@@ -1493,7 +1541,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 			}
 		}
 		let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: transfers)
-		self.commandDelegate.send(result, callbackId: command.callbackId)
+		cordovaCallback(result, callbackId: command.callbackId)
 	}
 
 	
@@ -1507,6 +1555,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 	
 	@objc(requestNotificationPermission:)
 	func requestNotificationPermission(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		let allowSound = command.argument(at: 0) as! Bool
 		let center = UNUserNotificationCenter.current()
 		var options: UNAuthorizationOptions = []
@@ -1519,11 +1568,11 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
             self.notificationsAuthorized = granted
 			if (granted) {
                 self.notificationSound = allowSound
-				self.commandDelegate.send(result, callbackId: command.callbackId)
+                self.cordovaCallback(result, callbackId: command.callbackId)
 			} else {
 				result = CDVPluginResult(status: CDVCommandStatus_ERROR, 
 							messageAs: "failed:" + error!.localizedDescription)
-				self.commandDelegate.send(result, callbackId: command.callbackId)
+                self.cordovaCallback(result, callbackId: command.callbackId)
 			}
 		}
         if (pendingNotifications != nil && pendingNotifications.count > 0) {
@@ -1535,10 +1584,11 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 	
 	@objc(scheduleNotification:)
 	func scheduleNotification(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		var result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "notauthorized")
 		if (!notificationsAuthorized) {
 			sendErrorLog("scheduleNotification: notifications not authorized")
-			self.commandDelegate.send(result, callbackId: command.callbackId)
+			cordovaCallback(result, callbackId: command.callbackId)
 			return
 		}
 		let trigger = command.argument(at: 0) as! [String: Int]
@@ -1550,7 +1600,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
         {
 			result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "duplicate")
 			sendErrorLog("scheduleNotification: duplicate notification " + String(timestamp))
-			self.commandDelegate.send(result, callbackId: command.callbackId)
+			cordovaCallback(result, callbackId: command.callbackId)
 			return
 		}
 		let center = UNUserNotificationCenter.current()
@@ -1599,14 +1649,14 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
                                 self.sendErrorLog("Notification failed: " + err!.localizedDescription)
 								result = CDVPluginResult(status: CDVCommandStatus_ERROR, 
 											messageAs: err!.localizedDescription)
-								self.commandDelegate.send(result, callbackId: command.callbackId)
+                                self.cordovaCallback(result, callbackId: command.callbackId)
                             }
                             else {
                                 self.pendingNotifications.append(userInfo)
                                 self.sendLog("Notification " + String(timestamp) + " added")
 								result = CDVPluginResult(status: CDVCommandStatus_OK, 
 											messageAs: timestamp)
-								self.commandDelegate.send(result, callbackId: command.callbackId)
+                                self.cordovaCallback(result, callbackId: command.callbackId)
                             }
                         }
         )
@@ -1614,13 +1664,15 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 	
 	@objc(retrieveNotifications:)
 	func retrieveNotifications(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		let result = CDVPluginResult(status: CDVCommandStatus_OK,
 									messageAs:pendingNotifications)
-		self.commandDelegate.send(result, callbackId: command.callbackId)
+		cordovaCallback(result, callbackId: command.callbackId)
 	}
 	
 	@objc(cancelNotification:)
 	func cancelNotification(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		let timestamp = command.argument(at: 0) as! Int
 		let center = UNUserNotificationCenter.current()
         let index = pendingNotifications.firstIndex(where: { $0["TIMESTAMP"] as! Int == timestamp })
@@ -1629,23 +1681,25 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		if (index != nil) {
 			pendingNotifications.remove(at: index!)
 		}
-		self.commandDelegate.send(result, callbackId: command.callbackId)
+		cordovaCallback(result, callbackId: command.callbackId)
 	}
 	
 	@objc(cancelAllNotifications:)
 	func cancelAllNotifications(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		let center = UNUserNotificationCenter.current()
 		pendingNotifications = []
 		center.removeAllPendingNotificationRequests()
 		let result = CDVPluginResult(status: CDVCommandStatus_OK)
-		self.commandDelegate.send(result, callbackId: command.callbackId)
+		cordovaCallback(result, callbackId: command.callbackId)
 	}
 	
 	@objc(showDelegatedNotification:)
 	func showDelegatedNotification(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		showDelegatedNotifications = command.argument(at: 0) as! Bool
 		let result = CDVPluginResult(status: CDVCommandStatus_OK)
-		self.commandDelegate.send(result, callbackId: command.callbackId)
+		cordovaCallback(result, callbackId: command.callbackId)
 	}
     
     func userNotificationCenter(_ center: UNUserNotificationCenter,
@@ -1673,7 +1727,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
             let result = CDVPluginResult(status: CDVCommandStatus_OK,
                                             messageAs: userInfo)
 			result!.setKeepCallbackAs(true)
-			self.commandDelegate.send(result, callbackId: notificationDelegateCallbackId)
+			cordovaCallback(result, callbackId: notificationDelegateCallbackId)
 		}
     }
 	
@@ -1692,30 +1746,32 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
             let result = CDVPluginResult(status: CDVCommandStatus_OK,
                                             messageAs: userInfo)
 			result!.setKeepCallbackAs(true)
-			self.commandDelegate.send(result, callbackId: notificationCallbackId)
+			cordovaCallback(result, callbackId: notificationCallbackId)
 		}
 	}
 	
 	@objc(registerNotificationHandler:)
 	func registerNotificationHandler(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		if (notificationCallbackId != nil) {
 			cancelCallback(notificationCallbackId)
 		}
 		notificationCallbackId = command.callbackId
 		let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "")
 		result!.setKeepCallbackAs(true)
-		self.commandDelegate.send(result, callbackId: command.callbackId)
+		cordovaCallback(result, callbackId: command.callbackId)
 	}
 	
 	@objc(registerNotificationDelegate:)
 	func registerNotificationDelegate(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		if (notificationDelegateCallbackId != nil) {
 			cancelCallback(notificationDelegateCallbackId)
 		}
 		notificationDelegateCallbackId = command.callbackId
 		let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "")
 		result!.setKeepCallbackAs(true)
-		self.commandDelegate.send(result, callbackId: command.callbackId)
+		cordovaCallback(result, callbackId: command.callbackId)
 	}
 	
 	/*
@@ -1776,7 +1832,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		else {
 			let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: msg)
 			result!.setKeepCallbackAs(true)
-			self.commandDelegate.send(result, callbackId: logcallbackId)
+			cordovaCallback(result, callbackId: logcallbackId)
             print(msg)
 		}
 	}
@@ -1789,7 +1845,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
         else {
             let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: msg)
             result!.setKeepCallbackAs(true)
-            self.commandDelegate.send(result, callbackId: logcallbackId)
+            cordovaCallback(result, callbackId: logcallbackId)
             print(msg)
         }
     }
@@ -1802,7 +1858,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
         else {
             let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: msg)
             result!.setKeepCallbackAs(true)
-            self.commandDelegate.send(result, callbackId: logcallbackId)
+            cordovaCallback(result, callbackId: logcallbackId)
             print("WARN: " + msg)
         }
     }
@@ -1820,7 +1876,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		else {
 			let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: message)
 			result!.setKeepCallbackAs(true)
-			self.commandDelegate.send(result, callbackId: logcallbackId)
+			cordovaCallback(result, callbackId: logcallbackId)
             print(message)
 		}
 	}
@@ -1838,7 +1894,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		else {
 			let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: message)
 			result!.setKeepCallbackAs(true)
-			self.commandDelegate.send(result, callbackId: logcallbackId)
+			cordovaCallback(result, callbackId: logcallbackId)
             print(msg)
 		}
 	}
@@ -1856,13 +1912,14 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		else {
 			let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: message)
 			result!.setKeepCallbackAs(true)
-			self.commandDelegate.send(result, callbackId: logcallbackId)
+			cordovaCallback(result, callbackId: logcallbackId)
             print("WARN: " + message)
 		}
 	}
 	
 	@objc(startLog:)
 	func startLog(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		if (logcallbackId != nil) {
 			cancelCallback(logcallbackId)
 		}
@@ -1871,34 +1928,36 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
         print(swiftLogbacklog)
 		let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: swiftLogbacklog)
 		result!.setKeepCallbackAs(true)
-		self.commandDelegate.send(result, callbackId: command.callbackId)
+		cordovaCallback(result, callbackId: command.callbackId)
 		swiftLogbacklog = "BACKLOG"
 	}
 	
 	@objc(setAppLogLevel:)
 	func setAppLogLevel(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		let level = command.argument(at: 0) as? Int
 		if (level == nil) {
 			let result = CDVPluginResult(status: CDVCommandStatus_ERROR)
-			self.commandDelegate.send(result, callbackId: command.callbackId)
+			cordovaCallback(result, callbackId: command.callbackId)
 		}
 		else {
 			let result = CDVPluginResult(status: CDVCommandStatus_OK)
-			self.commandDelegate.send(result, callbackId: command.callbackId)
+			cordovaCallback(result, callbackId: command.callbackId)
 			appLogLevel = level!
 		}
 	}
 	
 	@objc(setWatchLogLevel:)
 	func setWatchLogLevel(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		let level = command.argument(at: 0) as? Int
 		if (level == nil) {
 			let result = CDVPluginResult(status: CDVCommandStatus_ERROR)
-			self.commandDelegate.send(result, callbackId: command.callbackId)
+			cordovaCallback(result, callbackId: command.callbackId)
 		}
 		else {
 			let result = CDVPluginResult(status: CDVCommandStatus_OK)
-			self.commandDelegate.send(result, callbackId: command.callbackId)
+			cordovaCallback(result, callbackId: command.callbackId)
 			watchLogLevel = level!
             addMessage(msgType: "SETLOGLEVEL", msg: watchLogLevel, timestamp: newTimestamp(), watchMessageQueue)
 		}
@@ -1906,14 +1965,15 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 	
 	@objc(setWatchPrintLogLevel:)
 	func setWatchPrintLogLevel(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
 		let level = command.argument(at: 0) as? Int
 		if (level == nil) {
 			let result = CDVPluginResult(status: CDVCommandStatus_ERROR)
-			self.commandDelegate.send(result, callbackId: command.callbackId)
+			cordovaCallback(result, callbackId: command.callbackId)
 		}
 		else {
 			let result = CDVPluginResult(status: CDVCommandStatus_OK)
-			self.commandDelegate.send(result, callbackId: command.callbackId)
+			cordovaCallback(result, callbackId: command.callbackId)
 			watchPrintLogLevel = level!
 			addMessage(msgType: "SETPRINTLOGLEVEL", msg: watchPrintLogLevel, timestamp: newTimestamp(), watchMessageQueue)
 		}
@@ -1923,6 +1983,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
     
     @objc(wcSessionCommand:)
     func wcSessionCommand(command: CDVInvokedUrlCommand) {
+        cordovaSuspended = false
         let session = WCSession.default
         guard let op = command.argument(at: 0) as? String
         else {
@@ -1948,7 +2009,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
                                 self.sendErrorLog("wcSessionCommand error " + String(describing: response))
                                 if (self.lastWCSessionCommandCallback != nil) {
                                     let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "wcSessionCommand error " + String(describing: response))
-                                    self.commandDelegate.send(result, callbackId: self.lastWCSessionCommandCallback)
+                                    self.cordovaCallback(result, callbackId: self.lastWCSessionCommandCallback)
                                     self.lastWCSessionCommandCallback = nil
                                 }
                             })
@@ -1965,7 +2026,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
                                 self.sendErrorLog("wcSessionCommand error " + String(describing: response))
                                 if (self.lastWCSessionCommandCallback != nil) {
                                     let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "wcSessionCommand error " + String(describing: response))
-                                    self.commandDelegate.send(result, callbackId: self.lastWCSessionCommandCallback)
+                                    self.cordovaCallback(result, callbackId: self.lastWCSessionCommandCallback)
                                     self.lastWCSessionCommandCallback = nil
                                 }
                             })
@@ -1990,7 +2051,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
                 sendErrorLog("wcSessionCommand: updateContext error \(error)")
                 if (self.lastWCSessionCommandCallback != nil) {
                     let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "wcSessionCommand: updateContext error \(error)")
-                    self.commandDelegate.send(result, callbackId: self.lastWCSessionCommandCallback)
+                    cordovaCallback(result, callbackId: self.lastWCSessionCommandCallback)
                     self.lastWCSessionCommandCallback = nil
                 }
             }
