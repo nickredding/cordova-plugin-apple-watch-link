@@ -557,6 +557,9 @@ function watchLink() {
     watchLink.flushMessages flushes all outstanding messages from the queue. The 
     error handlers for flushed messages are NOT invoked and any acknowledgements 
     that subsequently arrive will be ignored (the success handlers will NOT be invoked).
+    
+    Note: messages sent via watchLink.transferMessage that have been sent vai user
+    information transfer will not be affected by this call.
     */
     
     _watchLink.flushMessages = function() {
@@ -566,6 +569,92 @@ function watchLink() {
         }
         cordova.exec(null, null, 'WatchLink', 'flushMessages', []);
     };
+    
+    /* 
+    watchLink.transferMessage sends a message to the watch. If the watch is available but 
+    not reachable, the message is sent via user information transfer which can take place in background. 
+    Messages are acknowledged by the watch and the success callback will not be 
+    invoked until acknowlegement has been received.
+    
+    Messages are acknowledged by the watch and the success callback will not be 
+    invoked until acknowlegement has been received.
+            
+    Note: if you want to omit acknowledgement, use the traditional Cordova 
+    callback method and supply null for the success callback.
+    
+    Using the traditional Cordova callback method:
+    
+        // send with acknowledgement
+        watchLink.transferMessage(msgType, msgBody, success, error); 
+        
+        // send without acknowledgement
+        watchLink.transferMessage(msgType, msgBody, null, error);      
+    
+    Using the Promise construct:
+            
+        watchLink.transferMessage(msgType, msgBody)
+            .then(success)
+            .catch(error);
+    */
+    
+    _watchLink.transferMessage = function(msgType, msgBody, success, error) {
+        if (!_watchLink.initialized || _watchLink.available !== true) {
+            _watchLink.errorLog('watchLink.sendMessage: watch session not ' + (_watchLink.initialized ? 'available' : 'initialized'));
+            if (success === undefined && error === undefined) {
+                return new Promise(
+                    function(resolve, reject) {
+                            reject(_watchLink.initialized ? 'not available' : 'uninitialized');
+                    });
+            }
+            else
+            if (error) {
+                error(_watchLink.initialized ? 'not available' : 'uninitialized');
+            }
+            return;
+        }
+        var err = '';
+        if (typeof msgType !== 'string') {
+            err = 'watchLink.transferMessage msgType is not a string: ' + typeof msgType;
+        }
+        else
+        if (typeof msgBody !== 'object') {
+            err = 'watchLink.transferMessage msgBody is not an object: ' + typeof msgBody;
+        }
+        else
+        if (success != null && typeof success !== 'function') {
+            err = 'watchLink.transferMessage success parameter is not a function: ' 
+                + typeof success;
+        }
+        else
+        if (error != null && typeof error !== 'function') {
+            err = 'watchLink.transferMessage error parameter is not a function: ' 
+                + typeof error;
+        }
+        else
+        if (reservedMsgTypes.test(msgType)) {
+            err = 'watchLink.transferMessage msgType is reserved: ' + typeof msgType;
+        }
+        if (err) {
+            _watchLink.errorLog(err);
+            return;
+        }
+        msgBody.TIMESTAMP = newTimestamp();
+        if (typeof success === 'undefined' && typeof error === 'undefined') {
+            return new Promise(
+                function(resolve, reject) {
+                    cordova.exec(resolve, reject, 'WatchLink', 'transferMessage', 
+                                 [msgType || '', msgBody]);
+                });
+        }
+        if (success === null) {
+            cordova.exec(success, error, 'WatchLink', 'transferMessageNoAck', 
+                         [msgType || '', msgBody]);
+        }
+        else {
+            cordova.exec(success, error, 'WatchLink', 'transferMessage', 
+                         [msgType || '', msgBody]);
+        }
+    }; 
     
     
     /*
