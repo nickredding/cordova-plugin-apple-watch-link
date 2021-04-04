@@ -1,3 +1,4 @@
+cordova.define("cordova-plugin-apple-watch-link.watchLink", function(require, exports, module) {
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -2272,6 +2273,14 @@ function watchLink() {
         registeredNotificationHandler = false,
         registeredNotificationDelegate = false;
     
+    window.addEventListener("pagehide",
+    function() {
+        if (window.cordova && window.cordova.plugins && window.cordova.plugins.watchLink) {
+            cordova.exec(null, null, 'WatchLink', 'suspendCallbacks');
+            _watchLink.log('Cordova callbacks SUSPENDED')
+        }
+    });
+    
     document.addEventListener("deviceready",
         function() {
             _watchLink.log('watchLink deviceready');
@@ -2412,3 +2421,5 @@ function watchLink() {
 }
 module.exports = new watchLink();
 
+
+});
