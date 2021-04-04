@@ -721,6 +721,93 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 	}
 	
 	// messaging
+    
+    private func routeMessage(msgType: String, msgBody: Any) {
+        switch msgType {
+            case "RESET":
+                guard let msg = msgBody as? [String: Any]
+                else {
+                    return
+                }
+                let reason = msg["WATCHLINKSESSIONRESET"] as? String
+                if (reason != nil) {
+                    watchLog("RESET: " + reason!)
+                }
+                return
+            case "SETLOGLEVEL":
+                let level = msgBody as? Int
+                if (level != nil) {
+                    let printLevel = watchPrintLogLevel
+                    watchPrintLogLevel = 3
+                    printLog("SETLOGLEVEL \(level!)")
+                    watchPrintLogLevel = printLevel
+                    watchLogLevel = level!
+                }
+                else {
+                    printErrorLog("SETLOGLEVEL received illegal level " +
+                        String(describing: msgBody))
+                }
+            case "SETPRINTLOGLEVEL":
+                let level = msgBody as? Int
+                if (level != nil) {
+                    watchPrintLogLevel = 3
+                    printLog("SETPRINTLOGLEVEL \(level!)")
+                    watchPrintLogLevel = level!
+                }
+                else {
+                    printErrorLog("SETPRINTLOGLEVEL received illegal level " +
+                        String(describing: msgBody))
+                }
+            case "UPDATEDCONTEXT":
+                let ackedTimestamp = Int64(msgBody as! String)
+                if (ackedTimestamp != nil && pendingContextUpdate != nil && pendingContextUpdate.timestamp == ackedTimestamp!) {
+                    pendingContextUpdate.ackHandler(String(ackedTimestamp!))
+                    printLog("ACK UPDATEDCONTEXT")
+                }
+                else {
+                    printErrorLog("ACK UPDATEDCONTEXT not pending")
+                }
+                pendingContextUpdate = nil
+            case "UPDATEDUSERINFO":
+                let ackedTimestamp = Int64(msgBody as! String)
+                if (ackedTimestamp != nil) {
+                    hostUserInfoQueue.clearQueue(timestamp: ackedTimestamp!)
+                    printLog("ACK UPDATEDUSERINFO cleared queue")
+                }
+                else {
+                    printErrorLog("ACK UPDATEDUSERINFO nil queue")
+                }
+                processQueue()
+            case "DATA":
+                watchLog("Received Data message")
+                let msgData = msgBody as! Data
+                watchAppDataMessageHandler(msgData)
+            default:
+                let body = msgBody as! [String: Any]
+                watchLog("Received message " + msgType + ": " + String(describing: body))
+                if (watchAppMessageHandlers != nil && msgType != "") {
+                    var handled = false
+                    for handler in watchAppMessageHandlers {
+                        if (msgType == handler.msgType || msgType.matches(handler.msgRegex)) {
+                            handled = true
+                            //DispatchQueue.main.sync {
+                            let handlerResult = (handler.handler(msgType, body) == false)
+                            //}
+                            if (handlerResult == false) {
+                                break;
+                            }
+                        }
+                    }
+                    if (!handled) {
+                        defaultAppMessageHandler(msgType, body)
+                    }
+                }
+                else {
+                    defaultAppMessageHandler(msgType, body)
+                }
+        }
+    }
+    
 	func handleMessage(message: [String : Any]) {
         guard let session = message["session"] as? Int64
 		else {
@@ -755,81 +842,7 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 			defaultAppMessageHandler("WCSESSION", message)
 			return
 		}
-		switch msgType {
-			case "RESET":
-				return
-			case "SETLOGLEVEL":
-				let level = msgBody as? Int
-				if (level != nil) {
-                    let printLevel = watchPrintLogLevel
-                    watchPrintLogLevel = 3
-                    printLog("SETLOGLEVEL \(level!)")
-                    watchPrintLogLevel = printLevel
-					watchLogLevel = level!
-				}
-				else {
-					printErrorLog("SETLOGLEVEL received illegal level " + 
-						String(describing: msgBody))
-				}
-			case "SETPRINTLOGLEVEL":
-				let level = msgBody as? Int
-				if (level != nil) {
-                    watchPrintLogLevel = 3
-                    printLog("SETPRINTLOGLEVEL \(level!)")
-					watchPrintLogLevel = level!
-				}
-				else {
-					printErrorLog("SETPRINTLOGLEVEL received illegal level " + 
-						String(describing: msgBody))
-				}
-			case "UPDATEDCONTEXT":
-                let ackedTimestamp = Int64(msgBody as! String)
-                if (ackedTimestamp != nil && pendingContextUpdate != nil && pendingContextUpdate.timestamp == ackedTimestamp!) {
-                    pendingContextUpdate.ackHandler(String(ackedTimestamp!))
-                    printLog("ACK UPDATEDCONTEXT")
-                }
-                else {
-                    printErrorLog("ACK UPDATEDCONTEXT not pending")
-                }
-				pendingContextUpdate = nil
-			case "UPDATEDUSERINFO":
-				let ackedTimestamp = Int64(msgBody as! String)
-				if (ackedTimestamp != nil) {
-					hostUserInfoQueue.clearQueue(timestamp: ackedTimestamp!)
-					printLog("ACK UPDATEDUSERINFO cleared queue")
-				}
-				else {
-					printErrorLog("ACK UPDATEDUSERINFO nil queue")
-				}
-				processQueue()
-			case "DATA":
-				watchLog("Received Data message")
-                let msgData = msgBody as! Data
-                watchAppDataMessageHandler(msgData)
-			default:
-                let body = msgBody as! [String: Any]
-				watchLog("Received message " + msgType + ": " + String(describing: body))
-				if (watchAppMessageHandlers != nil && msgType != "") {
-					var handled = false
-					for handler in watchAppMessageHandlers {
-						if (msgType == handler.msgType || msgType.matches(handler.msgRegex)) {
-							handled = true
-							//DispatchQueue.main.sync {
-                            let handlerResult = (handler.handler(msgType, body) == false)
-							//}
-							if (handlerResult == false) {
-								break;
-							}
-						}
-					}
-					if (!handled) {
-						defaultAppMessageHandler(msgType, body)
-					}
-				}
-				else {
-					defaultAppMessageHandler(msgType, body)
-				}
-		}
+        routeMessage(msgType: msgType, msgBody: msgBody)
 	}
 	
 	func session(_ session: WCSession, 
@@ -876,7 +889,6 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 	
 	// application user info
 	func session(_ session: WCSession, didReceiveUserInfo userInfo: [String : Any]) {
-        printLog("Received user info " + String(describing: userInfo))
         let complication = userInfo["ISCOMPLICATION"] as? Bool
         if (complication != nil) {
             printLog("didReceiveUserInfo complication update=" +
@@ -918,20 +930,8 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
                 String(sessionID))
 			return
 		}
-        let resetReason = userInfo["WATCHLINKSESSIONRESET"] as? String
         if (session > sessionID) {
             handleReset(session)
-			if (resetReason != nil) {
-				printLog("Session RESET via user info, reason=" + resetReason! + " new session=" + String(session))
-				if (watchResetFunc != nil) {
-					watchResetFunc()
-				}
-                if (ack) {
-                    _ = addMessage(msgType: "UPDATEDUSERINFO", msgBody: "\(timestamp)",
-                        ack: false, hostMessageQueue)
-                }
-				return
-			}
             printLog("Session RESET via user info, old session=" + String(sessionID) + " new session=" + String(session))
             if (watchResetFunc != nil) {
                 watchResetFunc()
@@ -941,10 +941,14 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 			_ = addMessage(msgType: "UPDATEDUSERINFO", msgBody: "\(timestamp)", 
 				ack: false, hostMessageQueue)
 		}
-        if (resetReason != nil) {
+        let msgType = userInfo["MSGTYPE"] as? String
+        let msgBody = userInfo["MSGBODY"]
+        if (msgType != nil && msgBody != nil) {
+            printLog("Received message via user info " + String(describing: userInfo))
+            routeMessage(msgType: msgType!, msgBody: msgBody!)
             return
         }
-		printLog("Received user info " + String(describing: userInfo))
+        printLog("Received user info " + String(describing: userInfo))
 		if (watchUserInfoHandler != nil) {
 			watchUserInfoHandler!(timestamp, userInfo)
 		}
@@ -1012,6 +1016,9 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 		if (watchContextHandler != nil) {
 			watchContextHandler!(timestamp, applicationContext)
 		}
+        else {
+            watchErrorLog("watchContextHandler NOT BOUND")
+        }
 	}
 	
 	func sendContext(_ context: [String: Any], ack: Bool = false, 
