@@ -1,4 +1,3 @@
-cordova.define("cordova-plugin-apple-watch-link.watchLink", function(require, exports, module) {
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -2510,5 +2509,3 @@ function watchLink() {
 }
 module.exports = new watchLink();
 
-
-});
