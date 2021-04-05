@@ -431,14 +431,14 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
         var lock = NSLock()
 
 		var msgQueue: [(timestamp: Int64, session: Int64, ack: Bool, 
-                        callbackId: String, msgType: String, msg: Any, transfer: Bool)] = []
+                        callbackId: String, msgType: String, msg: Any, msgTransfer: Bool)] = []
 		
 		func enqueue(msgType: String, msg: Any, timestamp: Int64,
-                     ack: Bool, callbackId: String, transfer: Bool = false)
+                     ack: Bool, callbackId: String, msgTransfer: Bool = false)
 		{
             lock.lock()
 			msgQueue.append((timestamp: timestamp, session: watchObj.sessionID,
-                             ack: ack, callbackId: callbackId, msgType: msgType, msg: msg, transfer: transfer))
+                             ack: ack, callbackId: callbackId, msgType: msgType, msg: msg, msgTransfer: msgTransfer))
             lock.unlock()
 			return;
 		}
@@ -471,11 +471,15 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		}
 		
 		// clear out the queue, NOT issuing reset callbacks
-		func flushQueue() {
+        func flushQueue(checkMsgTransfer: Bool = false) {
             lock.lock()
-			while (!msgQueue.isEmpty) {
-                watchObj.cancelCallback(msgQueue.first!.callbackId)
-				msgQueue.remove(at: 0)
+            var index = msgQueue.count - 1
+			while (index >= 0) {
+                if (!checkMsgTransfer || msgQueue[index].msgTransfer) {
+                    watchObj.cancelCallback(msgQueue[index].callbackId)
+                    msgQueue.remove(at: index)
+                }
+                index = index - 1
 			}
             processing = false
             lock.unlock()
@@ -582,7 +586,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
         let session = WCSession.default
         if (session.isReachable) {
             addMessage(msgType: msgType, msg: msgBody, timestamp: newTimestamp(),
-                       ack: ack, callbackId: callbackId, watchMessageQueue, transfer: true)
+                       ack: ack, callbackId: callbackId, watchMessageQueue, msgTransfer: true)
         }
         else {
             let info: [String: Any] = ["MSGTYPE": msgType, "MSGBODY": msgBody]
@@ -684,7 +688,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
             }
             queue.processing = false
             addMessage(msgType: "USERINFO", msg: info, timestamp: timestamp,
-                       ack: ack, callbackId: callbackId, watchUserInfoQueue)
+                       ack: ack, callbackId: callbackId, watchUserInfoQueue, msgTransfer: true)
             return
         }
         sendErrorLog("handleMessageQueueError " +
@@ -765,7 +769,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
                                 watchObj.handleMessageQueueResponse(response, self.watchMessageQueue) }
                             : nil)
                     var errorHandler: ((Error) -> Void)
-                    if (nextMsg.transfer) {
+                    if (nextMsg.msgTransfer) {
                         errorHandler = { (response: Error) in
                             self.handleMessageQueueTransferError(response, timestamp, self.watchMessageQueue, msgType: nextMsg.msgType, msg: nextMsg.msg, ack: nextMsg.ack, callbackId: nextMsg.callbackId)
                         }
@@ -880,10 +884,10 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 	// add messages to the queues
 	private func addMessage(msgType: String, msg: Any, timestamp: Int64, 
 			ack: Bool = false, callbackId: String = "",
-            _ queue: MessageQueue, transfer: Bool = false)
+            _ queue: MessageQueue, msgTransfer: Bool = false)
 	{
 		queue.enqueue(msgType: msgType, msg: msg, timestamp: timestamp, 
-                      ack: ack, callbackId: callbackId, transfer: transfer)
+                      ack: ack, callbackId: callbackId, msgTransfer: msgTransfer)
 		sendLog("Adding \(sessionID).\(timestamp) ack:\(ack) " + 
 			msgType + ": " + String(describing: msg) +
 			" callbackID=" + (callbackId == "" ? "none" : callbackId))
@@ -1200,7 +1204,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
         let timestamp = msgBody["TIMESTAMP"] as! Int64
         if (session.isReachable) {
             addMessage(msgType: msgType, msg: msgBody, timestamp: timestamp,
-                       ack: true, callbackId: command.callbackId, watchMessageQueue, transfer: true)
+                       ack: true, callbackId: command.callbackId, watchMessageQueue, msgTransfer: true)
         }
         else {
             let info: [String: Any] = ["MSGTYPE": msgType, "MSGBODY": msgBody]
@@ -1218,7 +1222,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
         let timestamp = msgBody["TIMESTAMP"] as! Int64
         if (session.isReachable) {
             addMessage(msgType: msgType, msg: msgBody, timestamp: timestamp,
-                       ack: false, callbackId: command.callbackId, watchMessageQueue, transfer: true)
+                       ack: false, callbackId: command.callbackId, watchMessageQueue, msgTransfer: true)
         }
         else {
             let info: [String: Any] = ["MSGTYPE": msgType, "MSGBODY": msgBody]
@@ -1233,6 +1237,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 	func flushMessages(command: CDVInvokedUrlCommand) {
         cordovaSuspended = false
 		watchMessageQueue.flushQueue()
+        watchUserInfoQueue.flushQueue(checkMsgTransfer: true)
 		let result = CDVPluginResult(status: CDVCommandStatus_OK)
 		cordovaCallback(result, callbackId: command.callbackId)
 	}
