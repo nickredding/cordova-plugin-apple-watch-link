@@ -33,6 +33,7 @@ All of the features of WCSession and WCSessionDelegate are supported with the ex
 * **[watchLink message session management](#watchlink-message-session-management).** How watchLink message sessions are managed.
 * **[Communication methods](#communication-methods).** An overview of communication methods supported by the plugin.
 * **[Dictionary message passing](#dictionary-message-passing).** How messages consisting of dictionary payloads are transmitted and received.
+* **[Dictionary message transfer](#dictionary-message-transfer).** How messages consisting of dictionary payloads are transmitted and received in background if necessary.
 * **[Data message passing](#data-message-passing).** How messages consisting of untyped data payloads are transmitted and received.
 * **[User information transfers](#user-information-transfers).** How user information payloads are transmitted, received and managed.
 * **[Application context transfers](#application-context-transfers).** How application context payloads are transmitted, received and managed.
@@ -554,6 +555,54 @@ watchLink.wcSessionCommand('sendMessage', payload, error)
 //	error = function(msg)
 //		Invoked in the case of an error
 ```
+
+## Dictionary message transfer
+
+Dictionary messages cannot be sent unless the companion app is reachable. However, the iOS message transfer function will send a message immediately if the watch companion app is reachable, but use user information transfer in background if the companion app is not reachable.
+
+This enables the watch companion app to receive, acknowledge and process messages while in background.
+
+Messages received via message transfer are processed by the watch companion app in the same way (using the same handlers) as messages receieved via message transmission. The fact that the mesage was sent via user information transfer is transparent to the watch companion app.
+#### Dictionary message transfer (iOS)
+
+Dictionary messages are transferred from the iOS app using a traditional Cordova plugin call, as in
+```
+watchLink.transferMessage(msgType, msgBody, success, error)
+//	Upon return, msgBody.TIMESTAMP contains the unique numeric 
+//		timestamp that can be used to refer to the message.
+//	msgType = <String>
+//	msgBody = <property-list-dictionary>
+//	success = function(timestamp)
+//		Invoked when the message has been delivered and acknowledged
+//			timestamp is the string representation of 
+//				msgBody.TIMESTAMP
+//	error = function(errorString0
+//		Invoked when an error occurred
+//			errorString = string describing the error followed 
+//				by ":<timestamp>"
+//			<timestamp> is the value of msgBody.TIMESTAMP
+//		If the Watch is unavailable errorString will 
+//			be "unavailable:<timestamp>"
+//		If the session was reset errorString will 
+//			be "sessionreset:<timestamp>"
+//		If the Watch session has not completed initialization errorString 
+//			will be "uninitialized"
+//		Errors are logged regardless of whether an error 
+//			function is provided
+```
+**Note:** the msgBody sent to the Swift layer is a clone of the object submitted to the sendMessage function. Therefore, changes to msgBody made prior to transmission will not be reflected in the message payload.
+
+Dictionary messages can also be sent from the iOS app using a Promise, as in
+```
+watchLink.transferMessage(msgType, msgBody).then(success).catch(error)
+//	Upon return, msgBody.TIMESTAMP contains the unique numeric 
+//	timestamp that can be used to refer to the message.
+```
+Dictionary messages are normally acknowledged by the receiving end, at which point the success function is invoked. However, if ```null``` is provided for the success parameter, the message will be sent without acknowledgement. For this behavior  you must use the traditional Cordova plugin call.
+
+A dictionary message that is sent with acknowledgement will block subsequent dictionary messages (acknowledged or not) until it is acknowledged or flushed due to an error or session reset.
+
+Note that regardless of acknowledgement, messages are sent and delivered in the order in which they are dispatched.
 ## Data message passing
 
 Data messages are actually sent using dictionary messages. Both the iOS app and watchOS app can bind a message handler function to handle incoming data messages.
