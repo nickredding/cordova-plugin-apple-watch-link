@@ -566,7 +566,7 @@ Messages received via message transfer are processed by the watch companion app 
 #### Dictionary message transfer (iOS)
 
 Dictionary messages are transferred from the iOS app using a traditional Cordova plugin call, as in
-```
+``` 
 watchLink.transferMessage(msgType, msgBody, success, error)
 //	Upon return, msgBody.TIMESTAMP contains the unique numeric 
 //		timestamp that can be used to refer to the message.
