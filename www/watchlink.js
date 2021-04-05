@@ -557,8 +557,9 @@ function watchLink() {
     error handlers for flushed messages are NOT invoked and any acknowledgements 
     that subsequently arrive will be ignored (the success handlers will NOT be invoked).
     
-    Note: messages sent via watchLink.transferMessage that have been sent vai user
-    information transfer will not be affected by this call.
+    Note: messages sent via watchLink.transferMessage that have been sent via user
+    information transfer but not yet transmited and/or acknowledged will also be 
+    flushed by this call.
     */
     
     _watchLink.flushMessages = function() {
