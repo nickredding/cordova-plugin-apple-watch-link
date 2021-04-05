@@ -591,7 +591,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
         else {
             let info: [String: Any] = ["MSGTYPE": msgType, "MSGBODY": msgBody]
             addMessage(msgType: "USERINFO", msg: info, timestamp: newTimestamp(),
-                       ack: ack, callbackId: callbackId, watchUserInfoQueue)
+                       ack: ack, callbackId: callbackId, watchUserInfoQueue, msgTransfer: true)
         }
         
     }
@@ -1227,7 +1227,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
         else {
             let info: [String: Any] = ["MSGTYPE": msgType, "MSGBODY": msgBody]
             addMessage(msgType: "USERINFO", msg: info, timestamp: timestamp,
-                       ack: false, callbackId: command.callbackId, watchUserInfoQueue)
+                       ack: false, callbackId: command.callbackId, watchUserInfoQueue, msgTransfer: true)
         }
         let result = CDVPluginResult(status: CDVCommandStatus_OK)
         cordovaCallback(result, callbackId: command.callbackId)
