@@ -470,8 +470,10 @@ function watchLink() {
 		"UPDATEDUSERINFO" + "|" +
 		"WATCHLOG" + "|" +
 		"WATCHERRORLOG" + "|" +
-		"WATCHAPPLOG" +
-        "WCSESSION" + ")$"
+		"WATCHAPPLOG" + "|" +
+        "WCSESSION" +  "|" +
+        "IOSINITIALIZED" + "|" +
+        "IOSTERMINATED" + ")$"
 	);
     
     /* 

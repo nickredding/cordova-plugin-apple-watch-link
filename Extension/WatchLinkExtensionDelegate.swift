@@ -881,9 +881,9 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 	func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
         printLog("Received message " + String(describing: message))
         let msgType = message["msgType"] as? String
-        if (msgType != nil && (msgType == "iosinitialized" || msgType == "iosterminated")) {
+        if (msgType != nil && (msgType == "IOSINITIALIZED" || msgType == "IOSTERMINATED")) {
             let phoneWasRunningState = phoneRunning
-            phoneRunning = (msgType == "iosinitialized")
+            phoneRunning = (msgType == "IOSINITIALIZED")
             if (phoneWasRunningState != phoneRunning && runningStateChanged != nil) {
                 runningStateChanged(phoneRunning)
             }
@@ -954,9 +954,9 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
             return
         }
         let msgType = userInfo["MSGTYPE"] as? String
-        if (msgType != nil && (msgType == "iosinitialized" || msgType == "iosterminated")) {
+        if (msgType != nil && (msgType == "IOSINITIALIZED" || msgType == "IOSTERMINATED")) {
             let phoneWasRunningState = phoneRunning
-            phoneRunning = (msgType == "iosinitialized")
+            phoneRunning = (msgType == "IOSINITIALIZED")
             if (phoneWasRunningState != phoneRunning && runningStateChanged != nil) {
                 runningStateChanged(phoneRunning)
             }
