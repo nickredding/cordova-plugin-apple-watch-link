@@ -77,15 +77,21 @@ func watchReset(_ f: @escaping (() -> Void)) {
 
 var phoneAvailable = false
 var phoneReachable = false
+var phoneRunning = false
+var requirePhoneRunning = true
 
 var availabilityChanged: ((Bool) -> Void)!
 var reachabilityChanged: ((Bool) -> Void)!
+var runningStateChanged: ((Bool) -> Void)!
 
 func bindAvailabilityHandler(_ handler: @escaping ((Bool) -> Void)) {
     availabilityChanged = handler
 }
 func bindReachabilityHandler(_ handler: @escaping ((Bool) -> Void)) {
     reachabilityChanged = handler
+}
+func bindRunningStateHandler(_ handler: @escaping ((Bool) -> Void)) {
+    runningStateChanged = handler
 }
 
 func nullHandler(_ msg: String) {}
@@ -115,8 +121,7 @@ func messageToPhone(msgType: String, msgBody: [String: Any], ack: Bool = false,
 			msgType + ": " + String(describing: msgBody));
 		return 0
 	}
-	return watchObj.sendMessage(msgType: msgType, msgBody: msgBody, ack:
-		ack, ackHandler: ackHandler, errHandler: errHandler)
+	return watchObj.sendMessage(msgType: msgType, msgBody: msgBody, ack: ack, ackHandler: ackHandler, errHandler: errHandler)
 }
 
 func dataMessageToPhone(dataMsg: Data, ack: Bool = false, 
@@ -173,7 +178,7 @@ func bindContextHandler(handler: @escaping (Int64, [String: Any]) -> Void) {
 
 func updateUserInfoToPhone(_ userInfo: [String: Any], ack: Bool = false, 
 	ackHandler: (@escaping (String) -> Void) = nullHandler, 
-	errHandler: (@escaping (String) -> Void) = nullHandler) -> Int64 
+	errHandler: (@escaping (String) -> Void) = nullHandler) -> Int64
 {
 	if (watchObj == nil || !watchInitialized || !watchInitialized) {
 		printLog("updateUserInfoToPhone watchObj is not ready, userInfo=" + String(describing:userInfo))
@@ -185,7 +190,7 @@ func updateUserInfoToPhone(_ userInfo: [String: Any], ack: Bool = false,
 		return 0
 	}
 	return watchObj.sendUserInfo(userInfo, ack: ack, 
-		ackHandler: ackHandler, errHandler: errHandler)
+                                 ackHandler: ackHandler, errHandler: errHandler)
 }
 
 func updateContextToPhone(_ context: [String: Any], ack: Bool = false, 
@@ -268,11 +273,11 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
         
         var lock = NSLock()
 
-		var msgQueue: [(timestamp: Int64, session: Int64, ack: Bool, 
+        var msgQueue: [(timestamp: Int64, session: Int64, ack: Bool,
 			ackHandler: (String) -> Void, 
 			errHandler: (String) -> Void, msgType: String, msg: Any)] = []
 		
-		func enqueue(msgType: String, msg: Any, ack: Bool, 
+		func enqueue(msgType: String, msg: Any, ack: Bool,
 			ackHandler: @escaping (String) -> Void, 
 			errHandler: @escaping (String) -> Void) -> Int64 
 		{
@@ -282,8 +287,8 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 				timestamp = msgQueue.last!.timestamp + 1;
 			}
 			msgQueue.append((timestamp: timestamp, session: watchObj.sessionID, 
-				ack: ack, ackHandler: ackHandler, errHandler: errHandler, 
-				msgType: msgType, msg: msg))
+                             ack: ack, ackHandler: ackHandler, errHandler: errHandler,
+                            msgType: msgType, msg: msg))
             lock.unlock()
 			return timestamp;
 		}
@@ -470,9 +475,11 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 				continue
 			}
 			let timestamp = nextMsg.timestamp
-			printLog("Sending message " + 
-				String(describing: ["timestamp": nextMsg.timestamp, "ack": nextMsg.ack, 
-					"msgType": nextMsg.msgType, "msgBody": nextMsg.msg]))
+
+            printLog("Sending message " +
+                String(describing: ["timestamp": nextMsg.timestamp, "ack": nextMsg.ack,
+                    "msgType": nextMsg.msgType, "msgBody": nextMsg.msg]))
+
 			let replyHandler : (([String: Any]) -> Void)? =
 				(nextMsg.ack ?
 					{ (response: [String: Any]) in
@@ -507,8 +514,10 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 				continue
 			}
 			let timestamp = nextMsg.timestamp
-			printLog("Sending data message " +
-				String(describing: ["timestamp": nextMsg.timestamp, "ack": nextMsg.ack]))
+
+            printLog("Sending data message " +
+                    String(describing: ["timestamp": nextMsg.timestamp, "ack": nextMsg.ack]))
+
 			let replyHandler : (([String: Any]) -> Void)? =
 				(nextMsg.ack ?
 					{ (response: [String: Any]) in
@@ -545,7 +554,9 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 			msg["TIMESTAMP"] = nextMsg.timestamp
 			msg["SESSION"] = nextMsg.session
 			watchSession.transferUserInfo(msg)
-			printLog("Sending User Info " + String(describing: nextMsg.msg))
+            
+            printLog("Sending User Info " + String(describing: nextMsg.msg))
+
 			if (nextMsg.ack) {
 				hostUserInfoQueue.processing = true
 				break
@@ -567,10 +578,16 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 		ackHandler: (@escaping (String) -> Void) = nullHandler, 
 		errHandler: (@escaping (String) -> Void) = nullHandler) -> Int64
 	{
+        if (!phoneReachable || (!phoneRunning && requirePhoneRunning)) {
+            errHandler("NOTRUNNING")
+            return 0
+        }
 		let timestamp = queue.enqueue(msgType: msgType, msg: msgBody, 
-			ack: ack, ackHandler: ackHandler, errHandler: errHandler)
-		printLog("Added message to queue timestamp: \(timestamp) ack:\(ack) " + msgType + ": " +
-			String(describing: msgBody))
+                                      ack: ack, ackHandler: ackHandler, errHandler: errHandler)
+        
+        printLog("Added message to queue timestamp: \(timestamp) ack:\(ack) " + msgType + ": " +
+            String(describing: msgBody))
+
 		processQueue()
 		return timestamp
 	}
@@ -850,12 +867,34 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 		replyHandler: @escaping ([String : Any]) -> Void) 
 	{
 		replyHandler(message)
+        if (!phoneRunning) {
+            phoneRunning = true
+            if (runningStateChanged != nil) {
+                runningStateChanged(phoneRunning)
+            }
+            
+        }
         printLog("Received message " + String(describing: message))
 		handleMessage(message: message)
 	}
 	
 	func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
         printLog("Received message " + String(describing: message))
+        let msgType = message["msgType"] as? String
+        if (msgType != nil && (msgType == "iosinitialized" || msgType == "iosterminated")) {
+            let phoneWasRunningState = phoneRunning
+            phoneRunning = (msgType == "iosinitialized")
+            if (phoneWasRunningState != phoneRunning && runningStateChanged != nil) {
+                runningStateChanged(phoneRunning)
+            }
+            return
+        }
+        if (!phoneRunning) {
+            phoneRunning = true
+            if (runningStateChanged != nil) {
+                runningStateChanged(phoneRunning)
+            }
+        }
 		handleMessage(message: message)
 	}
 	
@@ -863,28 +902,44 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 		didReceiveMessageData message: Data, replyHandler: @escaping (Data) -> Void) 
 	{
 		replyHandler(message)
+        if (!phoneRunning) {
+            phoneRunning = true
+            if (runningStateChanged != nil) {
+                runningStateChanged(phoneRunning)
+            }
+        }
 		watchAppDataMessageHandler(message)
 	}
 	
 	func session(_ session: WCSession, didReceiveMessageData message: Data) -> Void
 	{
+        if (!phoneRunning) {
+            phoneRunning = true
+            if (runningStateChanged != nil) {
+                runningStateChanged(phoneRunning)
+            }
+        }
 		watchAppDataMessageHandler(message)
 	}
 	
 	func sendMessage(msgType: String, msgBody: [String: Any], ack: Bool = false, 
 		ackHandler: (@escaping (String) -> Void) = nullHandler, 
-		errHandler: (@escaping (String) -> Void) = nullHandler) -> Int64 
+		errHandler: (@escaping (String) -> Void) = nullHandler) -> Int64
 	{
 		return addMessage(msgType: msgType, msgBody: msgBody, ack: ack, 
-			hostMessageQueue, ackHandler: ackHandler, errHandler: errHandler)
+                          hostMessageQueue, ackHandler: ackHandler, errHandler: errHandler)
 	}
 	
 	func sendDataMessage(msgData: Any, ack: Bool = false, 
 		ackHandler: (@escaping (String) -> Void) = nullHandler,
-		errHandler: (@escaping (String) -> Void) = nullHandler) -> Int64 
+		errHandler: (@escaping (String) -> Void) = nullHandler) -> Int64
 	{
+        if (!phoneReachable || (!phoneRunning && requirePhoneRunning)) {
+            errHandler("NOTRUNNING")
+            return 0
+        }
 		return addMessage(msgType: "DATA", msgBody: msgData, ack: ack,
-			hostDataMessageQueue, ackHandler: ackHandler, errHandler: errHandler)
+                          hostDataMessageQueue, ackHandler: ackHandler, errHandler: errHandler)
 	}
 	
 	// application user info
@@ -897,6 +952,21 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
                 watchUserInfoHandler!(-1, userInfo)
             }
             return
+        }
+        let msgType = userInfo["MSGTYPE"] as? String
+        if (msgType != nil && (msgType == "iosinitialized" || msgType == "iosterminated")) {
+            let phoneWasRunningState = phoneRunning
+            phoneRunning = (msgType == "iosinitialized")
+            if (phoneWasRunningState != phoneRunning && runningStateChanged != nil) {
+                runningStateChanged(phoneRunning)
+            }
+            return
+        }
+        if (!phoneRunning) {
+            phoneRunning = true
+            if (runningStateChanged != nil) {
+                runningStateChanged(phoneRunning)
+            }
         }
 		guard let timestamp = userInfo["TIMESTAMP"] as? Int64
 		else {
@@ -941,7 +1011,6 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 			_ = addMessage(msgType: "UPDATEDUSERINFO", msgBody: "\(timestamp)", 
 				ack: false, hostMessageQueue)
 		}
-        let msgType = userInfo["MSGTYPE"] as? String
         let msgBody = userInfo["MSGBODY"]
         if (msgType != nil && msgBody != nil) {
             printLog("Received message via user info " + String(describing: userInfo))
@@ -956,7 +1025,7 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 	
 	func sendUserInfo(_ info: [String: Any], ack: Bool = false, 
 		ackHandler: (@escaping (String) -> Void) = nullHandler, 
-		errHandler: (@escaping (String) -> Void) = nullHandler) -> Int64 
+		errHandler: (@escaping (String) -> Void) = nullHandler) -> Int64
 	{
 		addMessage(msgType: "USERINFO", msgBody: info, ack: ack, hostUserInfoQueue,
 			ackHandler: ackHandler, errHandler: errHandler)
@@ -967,6 +1036,12 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 		didReceiveApplicationContext applicationContext: [String : Any]) 
 	{
         printLog("Received context " + String(describing: applicationContext))
+        if (!phoneRunning) {
+            phoneRunning = true
+            if (runningStateChanged != nil) {
+                runningStateChanged(phoneRunning)
+            }
+        }
 		guard let timestamp = applicationContext["TIMESTAMP"] as? Int64
 		else {
 			printLog("didReceiveApplicationContext TIMESTAMP not found" +
@@ -1025,6 +1100,10 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 		ackHandler: (@escaping (String) -> Void) = nullHandler, 
 		errHandler: (@escaping (String) -> Void) = nullHandler) -> Int64 
 	{
+        if (!phoneReachable || (!phoneRunning && requirePhoneRunning)) {
+            errHandler("NOTRUNNING")
+            return 0
+        }
 		let timestamp = Date().currentTimeMillis()
 		if (pendingContextUpdate != nil) {
 			pendingContextUpdate.errHandler("reset:" + String(pendingContextUpdate.timestamp))
