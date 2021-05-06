@@ -428,7 +428,7 @@ function watchLink() {
     restarting the Cordova app does not restart the Swift layer. Therefore, 
     the session reset is required to ensure messages dispatched but not processed 
     before the restart are discarded.
-    */
+    */ 
     _watchLink.resetSession = function(completion, reason) {
         reason = reason || 'resetSession';
         if (!_watchLink.initialized) {
