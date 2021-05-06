@@ -168,6 +168,9 @@ function watchLink() {
         }
         if (typeof callback === 'function') {
             availabilityChangedCallback = callback;
+            if (_watchLink.available != null) {
+                callback(_watchLink.available);
+            }
 			return true;
         }
 		_watchLink.errorLog('watchLink.availabilityChanged: parameter is not a function',
@@ -265,14 +268,17 @@ function watchLink() {
     _watchLink.reachabilityChanged = function(callback) {
         reachabilityChangedCallback = null;
         if (callback == null) {
-            return;
+            return true;
         }
         if (typeof callback === 'function') {
             reachabilityChangedCallback = callback;
+            if (_watchLink.reachable != null) {
+                callback(_watchLink.reachable);
+            }
+            return true;
         }
-        else {
-            _watchLink.errorLog('watchLink.reachabilityChanged: parameter is not a function', callback);
-        }
+        _watchLink.errorLog('watchLink.reachabilityChanged: parameter is not a function', callback);
+        return false;
     };
     
     // Watch application state
@@ -399,14 +405,16 @@ function watchLink() {
     _watchLink.applicationStateChanged = function(callback) {
         applicationStateChangedCallback = null;
         if (callback == null) {
-            return;
+            return true;
         }
         if (typeof callback === 'function') {
             applicationStateChangedCallback = callback;
+            callback(_watchLink.applicationState);
+            return true;
+																											
         }
-        else {
-            _watchLink.errorLog('watchLink.applicationStateChanged: parameter is not a function', callback);
-        }
+        _watchLink.errorLog('watchLink.applicationStateChanged: parameter is not a function', callback);
+        return false;
     };
     
     // Message session management
