@@ -470,7 +470,7 @@ Dictionary messages cannot be sent unless the companion app is reachable. If the
 The following message types are reserved and may not be used: 
 ```
 ACK, DATA, SESSION, RESET, SETLOGLEVEL, SETPRINTLOGLEVEL, UPDATEDCONTEXT,
-UPDATEDUSERINFO, WATCHLOG, WATCHERRORLOG, WATCHAPPLOG, WCSESSION
+UPDATEDUSERINFO, WATCHLOG, WATCHERRORLOG, WATCHAPPLOG, WCSESSION, IOSINITIALIZED, IOSTERMINATED
 ```
 The iOS app and watchOS app can bind a default message handler to receive messages with message types that are not bound.
 
