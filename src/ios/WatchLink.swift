@@ -50,7 +50,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
     
     @objc(onAppTerminate)
     override func onAppTerminate() {
-        transferMessage(msgType: "iosterminated")
+        transferMessage(msgType: "IOSTERMINATED")
     }
     
     var cordovaSuspended = false
@@ -326,7 +326,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 				let result = CDVPluginResult(status: CDVCommandStatus_OK)
 				cordovaCallback(result, callbackId: initializationCallbackId)
 			}
-            transferMessage(msgType: "iosinitialized")
+            transferMessage(msgType: "IOSINITIALIZED")
 		}
 		else {
 			watchActivated = false
