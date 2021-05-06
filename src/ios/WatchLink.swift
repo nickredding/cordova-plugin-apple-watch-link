@@ -47,6 +47,12 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
                     " watchPrintLogLevel = " + String(watchPrintLogLevel))
         watchSystemMessages = "WATCHAPPACTIVE|WATCHINAPPACTIVE|WATCHAPPBACKGROUND|WATCHLOG|WATCHAPPLOG|WATCHERRORLOG"
 	}
+    
+    @objc(onAppTerminate)
+    override func onAppTerminate() {
+        transferMessage(msgType: "iosterminated")
+    }
+    
     var cordovaSuspended = false
     
     @objc(suspendCallbacks:)
@@ -320,6 +326,7 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 				let result = CDVPluginResult(status: CDVCommandStatus_OK)
 				cordovaCallback(result, callbackId: initializationCallbackId)
 			}
+            transferMessage(msgType: "iosinitialized")
 		}
 		else {
 			watchActivated = false
@@ -679,9 +686,8 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
         let index = (queue.msgQueue.isEmpty ? -1 : queue.getQueueItem(timestamp))
         if (WCError.Code.notReachable.rawValue as Int == (response as NSError).code ||
                 String(describing: response).matches("WCErrorDomain Code=7007")) {
-            sendLog("handleMessageQueueTransferError " +
-                "\(queue.msgQueue[index].timestamp) watch not reachable after " +
-                "transmission (will use user information transfer), msgType = " + queue.msgQueue[index].msgType + ":")
+            sendLog("handleMessageQueueTransferError watch not reachable after " +
+                "transmission (will use user information transfer), msgType = " + msgType + ":")
             let info: [String: Any] = ["MSGTYPE": msgType, "MSGBODY": msg]
             if (index != -1) {
                 queue.msgQueue.remove(at: index)
@@ -1195,12 +1201,26 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 		cordovaCallback(result, callbackId: command.callbackId)
 	}
     
+    func transferMessage(msgType: String, msgBody: [String: Any] = [:]) {
+        let session = WCSession.default
+        let timestamp = Date().currentTimeMillis()
+        if (session.isReachable) {
+            addMessage(msgType: msgType, msg: msgBody, timestamp: timestamp,
+                       ack: false, callbackId: "", watchMessageQueue, msgTransfer: true)
+        }
+        else {
+            let info: [String: Any] = ["MSGTYPE": msgType, "MSGBODY": msgBody]
+            addMessage(msgType: "USERINFO", msg: info, timestamp: timestamp,
+                       ack: false, callbackId: "", watchUserInfoQueue)
+        }
+    }
+    
     @objc(transferMessage:)
     func transferMessage(command: CDVInvokedUrlCommand) {
-        cordovaSuspended = false
-        let session = WCSession.default
         let msgType = command.argument(at: 0) as! String
         let msgBody = command.argument(at: 1) as! [String: Any]
+        cordovaSuspended = false
+        let session = WCSession.default
         let timestamp = msgBody["TIMESTAMP"] as! Int64
         if (session.isReachable) {
             addMessage(msgType: msgType, msg: msgBody, timestamp: timestamp,
