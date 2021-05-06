@@ -356,7 +356,11 @@ will overwrite a previously set callback with a different callback.
 ```
 #### Session status (watchOS)
 
-To query the status of the session, examine the session directly. For example,
+To query the availability status of the session, examine the global variable ```phoneAvailable``` which maintains the availability state of the iPhone companion app.
+
+To query the reachability status of the session, examine the global variable ```phoneReachable``` which maintains the reachability state of the iPhone companion app.
+
+You can also examine the session directly. For example,
 ```
 let watchSession = WCSession.default
 watchSession.isReachable // is the iOS app reachable
@@ -369,6 +373,25 @@ func bindAvailabilityHandler(_ handler: @escaping ((Bool) -> Void))
 func bindReachabilityHandler(_ handler: @escaping ((Bool) -> Void))
 ```
 See [WCSession class](https://developer.apple.com/documentation/watchconnectivity/wcsession) for details.
+
+#### iPhone companion app status (watchOS)
+
+To query the running status of the iPhone companion app, examine the global variable ```phoneRunning``` which maintains the running state.
+
+If the iPhone companion app is running (in foreground or background) the running state is ```true```.
+
+You can bind a handler to be notified of changes in companion app running state.
+```
+func bindRunningStateHandler(_ handler: @escaping ((Bool) -> Void))
+```
+
+#### iPhone companion app state considerations
+
+If your watch extension does not support running without the iOS companion app installation (as specified in the ```Info.plist``` file), the watchOS session status will always be avaialable since the watch app will be uninstalled if the iPhone app becomes unavailable.
+
+If the watchOS session status is available it will always be reachable. Sending a message to the iOS companion app when it is not running will cause iOS to launch the app in background to process the message.
+
+The global variable ```phoneRunning``` can be used to detect that the iPhone companion app is not currently running. If it is not desired to send messages to the iPhone companion app when it is not running, the global variable ```requirePhoneRunning``` can be set to ```true``` and any attempts to send messages, or transfer user information or application contexts, will be ignored if the iPhone companion app is not running. In this case, the error handler (if supplied) will be invoked with error message "NOTRUNNING".
 
 ## watchLink message session management
 
