@@ -48,11 +48,6 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
         watchSystemMessages = "WATCHAPPACTIVE|WATCHINAPPACTIVE|WATCHAPPBACKGROUND|WATCHLOG|WATCHAPPLOG|WATCHERRORLOG"
 	}
     
-    @objc(onAppTerminate)
-    override func onAppTerminate() {
-        transferMessage(msgType: "IOSTERMINATED")
-    }
-    
     var cordovaSuspended = false
     
     @objc(suspendCallbacks:)
