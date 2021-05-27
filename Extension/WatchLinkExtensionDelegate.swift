@@ -77,21 +77,15 @@ func watchReset(_ f: @escaping (() -> Void)) {
 
 var phoneAvailable = false
 var phoneReachable = false
-var phoneRunning = false
-var requirePhoneRunning = true
 
 var availabilityChanged: ((Bool) -> Void)!
 var reachabilityChanged: ((Bool) -> Void)!
-var runningStateChanged: ((Bool) -> Void)!
 
 func bindAvailabilityHandler(_ handler: @escaping ((Bool) -> Void)) {
     availabilityChanged = handler
 }
 func bindReachabilityHandler(_ handler: @escaping ((Bool) -> Void)) {
     reachabilityChanged = handler
-}
-func bindRunningStateHandler(_ handler: @escaping ((Bool) -> Void)) {
-    runningStateChanged = handler
 }
 
 func nullHandler(_ msg: String) {}
@@ -578,7 +572,7 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 		ackHandler: (@escaping (String) -> Void) = nullHandler, 
 		errHandler: (@escaping (String) -> Void) = nullHandler) -> Int64
 	{
-        if (!phoneReachable || (!phoneRunning && requirePhoneRunning)) {
+        if (!phoneReachable) {
             errHandler("NOTRUNNING")
             return 0
         }
@@ -636,6 +630,8 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 		// inactive. If the application was previously in the background, optionally 
 		// refresh the user interface.
 		printLog("Watch App Active")
+        let session = WCSession.default
+        print("applicationDidBecomeActive" + String(describing: session), session.isReachable)
         _ = addMessage(msgType: "WATCHAPPACTIVE", msgBody: [:], ack: false, hostMessageQueue)
 	}
 
@@ -867,13 +863,6 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 		replyHandler: @escaping ([String : Any]) -> Void) 
 	{
 		replyHandler(message)
-        if (!phoneRunning) {
-            phoneRunning = true
-            if (runningStateChanged != nil) {
-                runningStateChanged(phoneRunning)
-            }
-            
-        }
         printLog("Received message " + String(describing: message))
 		handleMessage(message: message)
 	}
@@ -882,18 +871,7 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
         printLog("Received message " + String(describing: message))
         let msgType = message["msgType"] as? String
         if (msgType != nil && (msgType == "IOSINITIALIZED" || msgType == "IOSTERMINATED")) {
-            let phoneWasRunningState = phoneRunning
-            phoneRunning = (msgType == "IOSINITIALIZED")
-            if (phoneWasRunningState != phoneRunning && runningStateChanged != nil) {
-                runningStateChanged(phoneRunning)
-            }
             return
-        }
-        if (!phoneRunning) {
-            phoneRunning = true
-            if (runningStateChanged != nil) {
-                runningStateChanged(phoneRunning)
-            }
         }
 		handleMessage(message: message)
 	}
@@ -902,23 +880,11 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 		didReceiveMessageData message: Data, replyHandler: @escaping (Data) -> Void) 
 	{
 		replyHandler(message)
-        if (!phoneRunning) {
-            phoneRunning = true
-            if (runningStateChanged != nil) {
-                runningStateChanged(phoneRunning)
-            }
-        }
 		watchAppDataMessageHandler(message)
 	}
 	
 	func session(_ session: WCSession, didReceiveMessageData message: Data) -> Void
 	{
-        if (!phoneRunning) {
-            phoneRunning = true
-            if (runningStateChanged != nil) {
-                runningStateChanged(phoneRunning)
-            }
-        }
 		watchAppDataMessageHandler(message)
 	}
 	
@@ -934,10 +900,6 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 		ackHandler: (@escaping (String) -> Void) = nullHandler,
 		errHandler: (@escaping (String) -> Void) = nullHandler) -> Int64
 	{
-        if (!phoneReachable || (!phoneRunning && requirePhoneRunning)) {
-            errHandler("NOTRUNNING")
-            return 0
-        }
 		return addMessage(msgType: "DATA", msgBody: msgData, ack: ack,
                           hostDataMessageQueue, ackHandler: ackHandler, errHandler: errHandler)
 	}
@@ -952,21 +914,6 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
                 watchUserInfoHandler!(-1, userInfo)
             }
             return
-        }
-        let msgType = userInfo["MSGTYPE"] as? String
-        if (msgType != nil && (msgType == "IOSINITIALIZED" || msgType == "IOSTERMINATED")) {
-            let phoneWasRunningState = phoneRunning
-            phoneRunning = (msgType == "IOSINITIALIZED")
-            if (phoneWasRunningState != phoneRunning && runningStateChanged != nil) {
-                runningStateChanged(phoneRunning)
-            }
-            return
-        }
-        if (!phoneRunning) {
-            phoneRunning = true
-            if (runningStateChanged != nil) {
-                runningStateChanged(phoneRunning)
-            }
         }
 		guard let timestamp = userInfo["TIMESTAMP"] as? Int64
 		else {
@@ -1011,6 +958,7 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 			_ = addMessage(msgType: "UPDATEDUSERINFO", msgBody: "\(timestamp)", 
 				ack: false, hostMessageQueue)
 		}
+        let msgType = userInfo["MSGTYPE"] as? String
         let msgBody = userInfo["MSGBODY"]
         if (msgType != nil && msgBody != nil) {
             printLog("Received message via user info " + String(describing: userInfo))
@@ -1036,12 +984,6 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 		didReceiveApplicationContext applicationContext: [String : Any]) 
 	{
         printLog("Received context " + String(describing: applicationContext))
-        if (!phoneRunning) {
-            phoneRunning = true
-            if (runningStateChanged != nil) {
-                runningStateChanged(phoneRunning)
-            }
-        }
 		guard let timestamp = applicationContext["TIMESTAMP"] as? Int64
 		else {
 			printLog("didReceiveApplicationContext TIMESTAMP not found" +
@@ -1100,10 +1042,6 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 		ackHandler: (@escaping (String) -> Void) = nullHandler, 
 		errHandler: (@escaping (String) -> Void) = nullHandler) -> Int64 
 	{
-        if (!phoneReachable || (!phoneRunning && requirePhoneRunning)) {
-            errHandler("NOTRUNNING")
-            return 0
-        }
 		let timestamp = Date().currentTimeMillis()
 		if (pendingContextUpdate != nil) {
 			pendingContextUpdate.errHandler("reset:" + String(pendingContextUpdate.timestamp))
