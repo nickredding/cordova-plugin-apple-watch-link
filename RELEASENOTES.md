@@ -33,3 +33,8 @@
 * Added the function transferMessage to the iOS Javascript interface that wil transmit messages in background using user information transfer if the companion watch app is not reachable.
 * Updated initialization code to prevent attempts to invoke Cordova callbacks while the app is in the process of reintializing the Javascript layer due to an app restart.
 * Added support for maintaining the running state of the iOS companion app.
+
+#### 1.0.8 (May 27,2021)
+
+* Bug fixes 
+* Removed support for maintaining the running state of the iOS companion app (it does not work reliably)
