@@ -115,6 +115,10 @@ func messageToPhone(msgType: String, msgBody: [String: Any], ack: Bool = false,
 			msgType + ": " + String(describing: msgBody));
 		return 0
 	}
+    if (!phoneReachable) {
+        errHandler("notreachable")
+        return 0
+    }
 	return watchObj.sendMessage(msgType: msgType, msgBody: msgBody, ack: ack, ackHandler: ackHandler, errHandler: errHandler)
 }
 
@@ -126,6 +130,10 @@ func dataMessageToPhone(dataMsg: Data, ack: Bool = false,
 		printErrorLog("dataMessageToPhone watchObj is not ready");
 		return 0
 	}
+    if (!phoneReachable) {
+        errHandler("notreachable")
+        return 0
+    }
     return watchObj.sendDataMessage(msgData: dataMsg,
 		ack: ack, ackHandler: ackHandler, errHandler: errHandler)
 }
@@ -183,6 +191,10 @@ func updateUserInfoToPhone(_ userInfo: [String: Any], ack: Bool = false,
 			String(describing:userInfo))
 		return 0
 	}
+    if (!phoneReachable) {
+        errHandler("notreachable")
+        return 0
+    }
 	return watchObj.sendUserInfo(userInfo, ack: ack, 
                                  ackHandler: ackHandler, errHandler: errHandler)
 }
@@ -200,6 +212,10 @@ func updateContextToPhone(_ context: [String: Any], ack: Bool = false,
 			String(describing:context))
 		return 0
 	}
+    if (!phoneReachable) {
+        errHandler("notreachable")
+        return 0
+    }
 	return watchObj.sendContext(context, ack: ack, 
 		ackHandler: ackHandler, errHandler: errHandler)
 }
@@ -630,8 +646,6 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 		// inactive. If the application was previously in the background, optionally 
 		// refresh the user interface.
 		printLog("Watch App Active")
-        let session = WCSession.default
-        print("applicationDidBecomeActive" + String(describing: session), session.isReachable)
         _ = addMessage(msgType: "WATCHAPPACTIVE", msgBody: [:], ack: false, hostMessageQueue)
 	}
 
