@@ -508,7 +508,7 @@ Dictionary messages are sent from the watchOS app using a call to the function `
 ```
 func messageToPhone(msgType: String, msg: [String: Any], ack: Bool = false,
 			ackHandler: (Int64) -> Void)= nullHandler, 
-			errHandler: ((String, Int64) -> Void)= nullHandler)
+			errHandler: ((String) -> Void)= nullHandler)
 	-> Int64
 ```
 Setting the ```ack``` parameter to true will send the message with acknowledgement. A dictionary message that is sent with acknowledgement will block subsequent dictionary messages (acknowledged or not) until it is acknowledged or flushed due to an error or session reset.
@@ -748,7 +748,7 @@ User information transfers are sent from the watchOS app using a call to the fun
 ```
 func updateUserInfoToPhone(userInfo: [String: Any], 
 			ackHandler: (([String: Any]) -> Void)? = nil, 
-			errHandler: ((String, [String: Any]) -> Void)? = nil) 
+			errHandler: ((String) -> Void)? = nil) 
 	-> Int64
 ```
 Setting the ```ack``` parameter to true will send the information with acknowledgement. A transfer that is sent with acknowledgement will block subsequent transfers (acknowledged or not) until it is acknowledged or flushed due to an error or session reset.
