@@ -38,3 +38,7 @@
 
 * Bug fixes 
 * Removed support for maintaining the running state of the iOS companion app (it does not work reliably)
+
+#### 1.0.9 (October 13,2021)
+
+* Bug fixes 
