@@ -228,8 +228,8 @@ private func logDefaultMessage(_ msgType: String, _ msgBody: Any) -> Void {
     printLog("Message default handler not bound " + msgType + ": " + String(describing: msgBody))
 }
 
-var watchLogLevel = 3
-var watchPrintLogLevel = 3
+var watchLogLevel = 2
+var watchPrintLogLevel = 2
 
 func printLog(_ msg: String) {
 	if (watchPrintLogLevel > 2) {
