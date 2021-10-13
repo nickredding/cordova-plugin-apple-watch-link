@@ -1890,9 +1890,9 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 	
 	log levels: 0/none = none, 1/error = errors, 2/app = app messages, 3/all = all messages
 	*/
-	private var appLogLevel: Int = 3
-	private var watchLogLevel: Int = 3
-	private var watchPrintLogLevel: Int = 3
+	private var appLogLevel: Int = 2
+	private var watchLogLevel: Int = 2
+	private var watchPrintLogLevel: Int = 2
 	
 	// get the log levels from config.xml
 	private func getLogLevel(_ settingName: String, _ setting: Int) -> Int {
