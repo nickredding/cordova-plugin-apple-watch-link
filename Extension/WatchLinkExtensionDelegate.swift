@@ -1018,9 +1018,13 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 			}
 			return
 		}
+        if (ack) {
+            _ = addMessage(msgType: "UPDATEDCONTEXT", msgBody: "\(timestamp)",
+                ack: false, hostMessageQueue)
+        }
 		guard let session = applicationContext["SESSION"] as? Int64
 		else {
-			printLog("didReceiveApplicationContext SESSION not found " +
+			printAppLog("didReceiveApplicationContext SESSION not found " +
 				"applicationContext=" + 
 				String(describing: applicationContext))
 			if (watchContextHandler != nil) {
@@ -1029,21 +1033,17 @@ class WatchLinkExtensionDelegate: NSObject, WKExtensionDelegate,
 			return
 		}
 		if (session < sessionID) {
-            printLog("didReceiveApplicationContext SESSION obsolete session ID " + String(session) + ", sessionID=" +
+            printAppLog("didReceiveApplicationContext SESSION obsolete session ID " + String(session) + ", sessionID=" +
                 String(sessionID))
 			return
 		}
         if (session > sessionID) {
-            printLog("Session RESET via context, old session=" + String(sessionID) + " new sessionID=" + String(session))
+            printAppLog("Session RESET via context, old session=" + String(sessionID) + " new sessionID=" + String(session))
             handleReset(session)
             if (watchResetFunc != nil) {
                 watchResetFunc()
             }
         }
-		if (ack) {
-            _ = addMessage(msgType: "UPDATEDCONTEXT", msgBody: "\(timestamp)",
-				ack: false, hostMessageQueue)
-		}
 		if (watchContextHandler != nil) {
 			watchContextHandler!(timestamp, applicationContext)
 		}

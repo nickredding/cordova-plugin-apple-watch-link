@@ -726,6 +726,10 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 				pendingContextUpdate = nil
 				return
 			}
+            sendAppLog("dispatchContext " +
+                       String(describing: [
+                           "ack": pendingContextUpdate.ack,
+                           "timestamp": pendingContextUpdate.timestamp]))
 			sendLog("dispatchContext " + 
 				String(describing: ["context": pendingContextUpdate.context, 
 					"ack": pendingContextUpdate.ack, 
@@ -941,7 +945,8 @@ class WatchLink: CDVPlugin, WCSessionDelegate, UNUserNotificationCenterDelegate 
 							callbackId: pendingContextUpdate.callbackId)
 						pendingContextUpdate = nil
 					}
-					else {
+					else
+                        if (pendingContextUpdate.timestamp < ackedTimestamp!) {
 						sendErrorLog("UPDATEDCONTEXT acknowledgement timestamp " +
 						"\(ackedTimestamp!) does not match pendingContextUpdate.timestamp" +
 						" \(pendingContextUpdate.timestamp)")
